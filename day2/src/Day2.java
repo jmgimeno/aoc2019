@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -77,18 +78,34 @@ public class Day2 {
         System.out.println("part1 = " + machine.state.get(0));
     }
 
+    static class IntTriple {
+        final int result;
+        final int noun;
+        final int verb;
+
+        public IntTriple(int result, int noun, int verb) {
+            this.result = result;
+            this.noun = noun;
+            this.verb = verb;
+        }
+    }
+
+    static IntTriple run(String program, int noun, int verb) {
+        var machine = new Machine(program);
+        machine.setNounAndVerb(noun, verb);
+        machine.run();
+        return new IntTriple(machine.state.get(0), noun, verb);
+    }
+
     static void part2() throws IOException {
         var program = Files.readString(Paths.get("input1.txt")).trim();
-        for (int noun = 0; noun < 100; noun++) {
-            for (int verb = 0; verb < 100; verb++) {
-                var machine = new Machine(program);
-                machine.setNounAndVerb(noun, verb);
-                machine.run();
-                if (machine.state.get(0) == 19690720) {
-                    System.out.printf("part2 = %d", 100 * noun + verb);
-                }
-            }
-        }
+        var result = IntStream.range(0, 100)
+                .boxed()
+                .flatMap(noun -> IntStream.range(0, 100).mapToObj(verb -> run(program, noun, verb)))
+                .dropWhile(r -> r.result != 19690720)
+                .map(r -> 100 * r.noun + r.verb)
+                .findFirst();
+        System.out.printf("part2 = %d%n", result.get());
     }
 
     public static void main(String[] args) throws IOException {
