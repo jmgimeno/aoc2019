@@ -21,7 +21,7 @@ public class Day2 {
         Machine(String initial) {
             state = Stream.of(initial.split(","))
                     .map(Integer::parseInt)
-                    .collect(Collectors.toCollection(ArrayList<Integer>::new));
+                    .collect(Collectors.toCollection(ArrayList::new));
         }
 
         int get(int pos) {
@@ -99,13 +99,14 @@ public class Day2 {
 
     static void part2() throws IOException {
         var program = Files.readString(Paths.get("input1.txt")).trim();
-        var result = IntStream.range(0, 100)
+        var part2 = IntStream.range(0, 100)
                 .boxed()
                 .flatMap(noun -> IntStream.range(0, 100).mapToObj(verb -> run(program, noun, verb)))
                 .dropWhile(r -> r.result != 19690720)
                 .map(r -> 100 * r.noun + r.verb)
-                .findFirst();
-        System.out.printf("part2 = %d%n", result.get());
+                .findFirst()
+                .orElseThrow();
+        System.out.printf("part2 = %d%n", part2);
     }
 
     public static void main(String[] args) throws IOException {
