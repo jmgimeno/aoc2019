@@ -1,37 +1,38 @@
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.IntStream;
 
 public class Day4 {
 
-    static int[] digits(int n) {
-        var digits = new int[6];
-        for (int i = 5; i >= 0; i--) {
-            digits[i] = n % 10;
-            n /= 10;
-        }
-        return digits;
+    static int[] revDigits(int n) {
+        // Least significant on position 0
+        return IntStream
+                .iterate(n, d -> d / 10)
+                .map(d -> d % 10)
+                .limit(6)
+                .toArray();
     }
 
-    static boolean neverDecreasing(int[] digits) {
+    static boolean neverDecreasing(int[] revDigits) {
         return IntStream
-                .range(0, digits.length - 1)
-                .noneMatch(i -> digits[i] > digits[i + 1]);
+                .range(0, revDigits.length - 1)
+                .noneMatch(i -> revDigits[i + 1] > revDigits[i]);
     }
 
-    static boolean adjacent(int[] digits) {
+    static boolean adjacent(int[] revDigits) {
         return IntStream
-                .range(0, digits.length - 1)
-                .anyMatch(i -> digits[i] == digits[i + 1]);
+                .range(0, revDigits.length - 1)
+                .anyMatch(i -> revDigits[i] == revDigits[i + 1]);
     }
 
     static boolean isValid(int n) {
-        var digits = digits(n);
-        return adjacent(digits) && neverDecreasing(digits);
+        var revDigits = revDigits(n);
+        return adjacent(revDigits) && neverDecreasing(revDigits);
     }
 
     static long howMany(int from, int to) {
-        return IntStream.range(from, to + 1).filter(Day4::isValid).count();
+        return IntStream
+                .rangeClosed(from, to)
+                .filter(Day4::isValid)
+                .count();
     }
 
     static void part1() {
@@ -40,8 +41,8 @@ public class Day4 {
     }
 
     static boolean isValid2(int n) {
-        var digits = digits(n);
-        return adjacent2(digits) && neverDecreasing(digits);
+        var revDigits = revDigits(n);
+        return adjacent2(revDigits) && neverDecreasing(revDigits);
     }
 
     static boolean adjacent2(int[] digits) {
@@ -55,7 +56,10 @@ public class Day4 {
     }
 
     static long howMany2(int from, int to) {
-        return IntStream.range(from, to + 1).filter(Day4::isValid2).count();
+        return IntStream
+                .rangeClosed(from, to)
+                .filter(Day4::isValid2)
+                .count();
     }
 
     static void part2() {
