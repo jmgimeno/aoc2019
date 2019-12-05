@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.IntUnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -32,7 +32,7 @@ public class Day5 {
                 8, Operation.EQUALS,
                 99, Operation.HALT);
 
-        Map<Integer, Function<Integer, Integer>> accessorDecoder = Map.of(
+        Map<Integer, IntUnaryOperator> accessorDecoder = Map.of(
                 0, pos -> state.get(state.get(pos)),
                 1, pos -> state.get(pos)
         );
@@ -58,7 +58,7 @@ public class Day5 {
         class Instruction {
 
             final Operation operation;
-            final List<Function<Integer, Integer>> accessors;
+            final List<IntUnaryOperator> accessors;
 
             Instruction(int opcode) {
                 operation = operationDecoder.get(opcode % 100);
@@ -78,7 +78,7 @@ public class Day5 {
             }
 
             int getArg(int i) {
-                return accessors.get(i - 1).apply(pc + i);
+                return accessors.get(i - 1).applyAsInt(pc + i);
             }
 
             private void execute() {
