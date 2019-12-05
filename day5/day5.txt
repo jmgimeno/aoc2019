@@ -1,7 +1,3 @@
-Advent of Code[About][Events][Shop][Settings][Log Out]jmgimeno 9*
-   0x0000|2019[Calendar][AoC++][Sponsors][Leaderboard][Stats]
-Our sponsors help make Advent of Code possible:
-SmartyStreets - Ridiculously -- Fast -------- Address ------ Verification --
 --- Day 5: Sunny with a Chance of Asteroids ---
 You're starting to sweat as the ship makes its way toward Mercury. The Elves suggest that you get the air conditioner working by upgrading your ship computer to support the Thermal Environment Supervision Terminal.
 
@@ -51,8 +47,6 @@ After providing 1 to the only input instruction and passing all the tests, what 
 
 Your puzzle answer was 12234644.
 
-The first half of this puzzle is complete! It provides one gold star: *
-
 --- Part Two ---
 The air conditioner comes online! Its cold air feels good for a while, but then the TEST alarms start to go off. Since the air conditioner can't vent its heat anywhere but back into the spacecraft, it's actually making the air inside the ship warmer.
 
@@ -89,9 +83,12 @@ This time, when the TEST diagnostic program runs its input instruction to get th
 
 What is the diagnostic code for system ID 5?
 
-Although it hasn't changed, you can still get your puzzle input.
+Your puzzle answer was 3508186.
 
-Answer:
+Both parts of this puzzle are complete! They provide two gold stars: **
 
+At this point, you should return to your Advent calendar and try another puzzle.
+
+If you still want to see it, you can get your puzzle input.
 
 You can also [Share] this puzzle.

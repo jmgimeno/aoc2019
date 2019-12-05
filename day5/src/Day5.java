@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 public class Day5 {
 
-    enum Operation {ADD, MUL, INPUT, OUTPUT, HALT}
+    enum Operation {ADD, MUL, INPUT, OUTPUT, JUMP_IF_TRUE, JUMP_IF_FALSE, LESS_THAN, EQUALS, HALT}
 
     enum Mode {POSITION, IMMEDIATE}
 
@@ -20,6 +20,10 @@ public class Day5 {
             2, Operation.MUL,
             3, Operation.INPUT,
             4, Operation.OUTPUT,
+            5, Operation.JUMP_IF_TRUE,
+            6, Operation.JUMP_IF_FALSE,
+            7, Operation.LESS_THAN,
+            8, Operation.EQUALS,
             99, Operation.HALT);
 
     static Map<Integer, Mode> modeDecoder = Map.of(
@@ -112,6 +116,38 @@ public class Day5 {
                         output.add(arg1);
                         pc += 2;
                     }
+                    case JUMP_IF_TRUE -> {
+                        var arg1 = argModes[0] == Mode.POSITION ? getPosition(pc + 1) : getImmediate(pc + 1);
+                        if (arg1 != 0) {
+                            pc = argModes[1] == Mode.POSITION ? getPosition(pc + 2) : getImmediate(pc + 2);
+                        } else {
+                            pc += 3;
+                        }
+                    }
+                    case JUMP_IF_FALSE -> {
+                        var arg1 = argModes[0] == Mode.POSITION ? getPosition(pc + 1) : getImmediate(pc + 1);
+                        if (arg1 == 0) {
+                            pc = argModes[1] == Mode.POSITION ? getPosition(pc + 2) : getImmediate(pc + 2);
+                        } else {
+                            pc += 3;
+                        }
+                    }
+                    case LESS_THAN -> {
+                        var arg1 = argModes[0] == Mode.POSITION ? getPosition(pc + 1) : getImmediate(pc + 1);
+                        var arg2 = argModes[1] == Mode.POSITION ? getPosition(pc + 2) : getImmediate(pc + 2);
+                        var result = arg1 < arg2 ? 1 : 0;
+                        assert argModes[2] == Mode.POSITION;
+                        setPosition(pc + 3, result);
+                        pc += 4;
+                    }
+                    case EQUALS -> {
+                        var arg1 = argModes[0] == Mode.POSITION ? getPosition(pc + 1) : getImmediate(pc + 1);
+                        var arg2 = argModes[1] == Mode.POSITION ? getPosition(pc + 2) : getImmediate(pc + 2);
+                        var result = arg1 == arg2 ? 1 : 0;
+                        assert argModes[2] == Mode.POSITION;
+                        setPosition(pc + 3, result);
+                        pc += 4;
+                    }
                     default -> throw new IllegalStateException("Bad op " + operation);
                 };
             }
@@ -131,7 +167,15 @@ public class Day5 {
         System.out.println("part1 = " + output);
     }
 
+    static void part2() throws IOException {
+        var program = Files.readString(Paths.get("input.txt")).trim();
+        var machine = new Machine(program);
+        var output = machine.run(5);
+        System.out.println("part2 = " + output);
+    }
+
     public static void main(String[] args) throws IOException {
         part1();
+        part2();
     }
 }
