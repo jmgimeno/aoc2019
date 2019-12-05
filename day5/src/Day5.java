@@ -3,17 +3,50 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Day5 {
 
-    static class Machine {
+    enum Operation {ADD, MUL, LOAD, STORE, HALT}
 
-        static final int ADD = 1;
-        static final int MUL = 2;
-        static final int HALT = 99;
+    enum Mode {POSITION, IMMEDIATE}
+
+    static Map<Integer, Operation> operationDecoder = Map.of(
+            1, Operation.ADD,
+            2, Operation.MUL,
+            3, Operation.LOAD,
+            4, Operation.STORE,
+            99, Operation.HALT);
+
+    static Map<Operation, Integer> operationLength = Map.of(
+            Operation.ADD, 4,
+            Operation.MUL, 4,
+            Operation.LOAD, 2,
+            Operation.STORE, 2,
+            Operation.HALT, 1);
+
+    static Map<Integer, Mode> modeDecoder = Map.of(
+            0, Mode.POSITION,
+            1, Mode.IMMEDIATE);
+
+    static class Instruction {
+        final Operation operation;
+        final Mode[] argModes;
+
+        Instruction(int opcode) {
+            operation = operationDecoder.get(opcode % 100);
+            argModes = IntStream
+                    .iterate(opcode / 100, i -> i / 10)
+                    .mapToObj(i -> modeDecoder.get(i % 10))
+                    .limit(3)
+                    .toArray(Mode[]::new);
+        }
+    }
+
+    static class Machine {
 
         List<Integer> state;
 
@@ -33,18 +66,18 @@ public class Day5 {
 
         void run() {
             int pc = 0;
-            int op = state.get(pc);
-            while (op != HALT) {
+            Instruction instruction = new Instruction(state.get(pc));
+            while (instruction.operation != Operation.HALT) {
                 var arg1 = get(pc + 1);
                 var arg2 = get(pc + 2);
-                var result = switch (op) {
+                var result = switch (instruction.operation) {
                     case ADD -> arg1 + arg2;
                     case MUL -> arg1 * arg2;
-                    default -> throw new IllegalStateException("Bad op " + op);
+                    default -> throw new IllegalStateException("Bad op " + instruction.operation);
                 };
                 set(pc + 3, result);
-                pc += 4;
-                op = state.get(pc);
+                pc += operationLength.get(instruction.operation);
+                instruction = new Instruction(state.get(pc));
             }
         }
 
