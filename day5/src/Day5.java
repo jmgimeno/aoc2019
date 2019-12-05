@@ -117,7 +117,7 @@ public class Day5 {
                         set(pc + 3, getArg(1) < getArg(2) ? 1 : 0);
                         pc += 4;
                     }
-                    case EQUALS -> { // I cannot use vars because of Integer equals
+                    case EQUALS -> {
                         set(pc + 3, getArg(1) == getArg(2) ? 1 : 0);
                         pc += 4;
                     }
