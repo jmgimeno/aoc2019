@@ -1,10 +1,7 @@
-import javax.swing.*;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,10 +15,8 @@ class Orbits {
 
     public long numOrbits(String initial) {
         return Stream
-                .iterate(Optional.of(initial), Optional::isPresent, opCurrent ->
-                        opCurrent.flatMap(current ->
-                                Optional.ofNullable(orbits.get(current))))
-                .count() - 1L;
+                .iterate(initial, orbits::containsKey, orbits::get)
+                .count();
     }
 
     public long totalOrbits() {
@@ -32,10 +27,7 @@ class Orbits {
 
     public List<String> pathToRoot(String initial) {
         return Stream
-                .iterate(Optional.of(initial), Optional::isPresent, opCurrent ->
-                        opCurrent.flatMap(current ->
-                                Optional.ofNullable(orbits.get(current))))
-                .map(Optional::get)
+                .iterate(initial, orbits::containsKey, orbits::get)
                 .collect(Collectors.toUnmodifiableList());
     }
 }
@@ -81,7 +73,7 @@ public class Day6 {
                 .filter(objectsInLongPath::contains)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("ShouldNotHappen"));
-        return shortPathToRoot.indexOf(common) + longPathToRoot.indexOf(common) - 2;
+        return shortPathToRoot.indexOf(common) + longPathToRoot.indexOf(common) - 2L;
     }
 
     static void part2() throws IOException {
