@@ -49,6 +49,7 @@ public class Day7 {
         final BlockingQueue<Integer> qOutput;
         final CountDownLatch endSignal;
         int pc;
+        boolean halted;
 
         enum Operation {ADD, MUL, INPUT, OUTPUT, JUMP_IF_TRUE, JUMP_IF_FALSE, LESS_THAN, EQUALS, HALT}
 
@@ -82,7 +83,7 @@ public class Day7 {
             try {
                 pc = 0;
                 Instruction instruction = new Instruction(state.get(pc));
-                while (instruction.isHalt()) {
+                while (!halted) {
                     instruction.execute();
                     instruction = new Instruction(state.get(pc));
                 }
@@ -160,7 +161,9 @@ public class Day7 {
                         set(pc + 3, getArg(1) == getArg(2) ? 1 : 0);
                         pc += 4;
                     }
-                    default -> throw new IllegalStateException("Bad op " + operation);
+                    case HALT -> {
+                        halted = true;
+                    }
                 }
             }
         }
