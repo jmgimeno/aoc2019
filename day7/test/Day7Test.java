@@ -1,6 +1,7 @@
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,46 +16,46 @@ class Day7Test {
 
     @Test
     void thrust1() {
-        Day7.Amplifiers amplifiers = new Day7.Amplifiers(PROGRAM1);
+        Day7.ConcurrentAmplifiers amplifiers = new Day7.ConcurrentAmplifiers(PROGRAM1);
         assertEquals(43210, amplifiers.thrust(List.of(4,3,2,1,0)));
     }
 
     @Test
     void thrust2() {
-        Day7.Amplifiers amplifiers = new Day7.Amplifiers(PROGRAM2);
+        Day7.ConcurrentAmplifiers amplifiers = new Day7.ConcurrentAmplifiers(PROGRAM2);
         assertEquals(54321, amplifiers.thrust(List.of(0,1,2,3,4)));
     }
 
     @Test
     void thrust3() {
-        Day7.Amplifiers amplifiers = new Day7.Amplifiers(PROGRAM3);
+        Day7.ConcurrentAmplifiers amplifiers = new Day7.ConcurrentAmplifiers(PROGRAM3);
         assertEquals(65210, amplifiers.thrust(List.of(1,0,4,3,2)));
     }
 
     @Test
-    void maxThrust1() {
-        assertEquals(43210, Day7.Amplifiers.maxThrust(PROGRAM1));
+    void maxThrust1() throws ExecutionException, InterruptedException {
+        assertEquals(43210, Day7.ConcurrentAmplifiers.maxThrust1(PROGRAM1));
     }
 
     @Test
-    void maxThrust2() {
-        assertEquals(54321, Day7.Amplifiers.maxThrust(PROGRAM2));
+    void maxThrust2() throws ExecutionException, InterruptedException {
+        assertEquals(54321, Day7.ConcurrentAmplifiers.maxThrust1(PROGRAM2));
     }
 
     @Test
-    void maxThrust3() {
-        assertEquals(65210, Day7.Amplifiers.maxThrust(PROGRAM3));
+    void maxThrust3() throws ExecutionException, InterruptedException {
+        assertEquals(65210, Day7.ConcurrentAmplifiers.maxThrust1(PROGRAM3));
     }
 
     @Test
     void concurrentThrust1() {
-        Day7.ConcurrentAmplifiers concurrentAmplifiers = new Day7.ConcurrentAmplifiers(PROGRAM4);
-        assertEquals(139629729, concurrentAmplifiers.thrust(List.of(9, 8, 7, 6, 5)));
+        Day7.ConcurrentAmplifiers amplifiers = new Day7.ConcurrentAmplifiers(PROGRAM4);
+        assertEquals(139629729, amplifiers.thrust(List.of(9, 8, 7, 6, 5)));
     }
 
     @Test
     void concurrentThrust2() {
-        Day7.ConcurrentAmplifiers concurrentAmplifiers = new Day7.ConcurrentAmplifiers(PROGRAM5);
-        assertEquals(18216, concurrentAmplifiers.thrust(List.of(9,7,8,5,6)));
+        Day7.ConcurrentAmplifiers amplifiers = new Day7.ConcurrentAmplifiers(PROGRAM5);
+        assertEquals(18216, amplifiers.thrust(List.of(9,7,8,5,6)));
     }
 }

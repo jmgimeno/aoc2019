@@ -42,157 +42,12 @@ public class Day7 {
         }
     }
 
-    static class Machine { // Copied from Day5
-
-        List<Integer> state;
-        Iterator<Integer> input;
-        List<Integer> output;
-        int pc;
-
-        enum Operation {ADD, MUL, INPUT, OUTPUT, JUMP_IF_TRUE, JUMP_IF_FALSE, LESS_THAN, EQUALS, HALT}
-
-        static Map<Integer, Operation> operationDecoder = Map.of(
-                1, Operation.ADD,
-                2, Operation.MUL,
-                3, Operation.INPUT,
-                4, Operation.OUTPUT,
-                5, Operation.JUMP_IF_TRUE,
-                6, Operation.JUMP_IF_FALSE,
-                7, Operation.LESS_THAN,
-                8, Operation.EQUALS,
-                99, Operation.HALT);
-
-        Map<Integer, IntUnaryOperator> accessorDecoder = Map.of(
-                0, pos -> state.get(state.get(pos)),
-                1, pos -> state.get(pos)
-        );
-
-        Machine(String program) {
-            state = Stream.of(program.split(","))
-                    .map(Integer::parseInt)
-                    .collect(Collectors.toCollection(ArrayList::new));
-        }
-
-        List<Integer> run(List<Integer> inputs) {
-            input = inputs.iterator();
-            output = new ArrayList<>();
-            pc = 0;
-            Instruction instruction = new Instruction(state.get(pc));
-            while (instruction.isHalt()) {
-                instruction.execute();
-                instruction = new Instruction(state.get(pc));
-            }
-            return output;
-        }
-
-        class Instruction {
-
-            final Operation operation;
-            final List<IntUnaryOperator> accessors;
-
-            Instruction(int opcode) {
-                operation = operationDecoder.get(opcode % 100);
-                accessors = IntStream
-                        .iterate(opcode / 100, i -> i / 10)
-                        .mapToObj(i -> accessorDecoder.get(i % 10))
-                        .limit(3)
-                        .collect(Collectors.toUnmodifiableList());
-            }
-
-            private boolean isHalt() {
-                return operation != Operation.HALT;
-            }
-
-            void set(int pos, int value) {
-                state.set(state.get(pos), value);
-            }
-
-            int getArg(int i) {
-                return accessors.get(i - 1).applyAsInt(pc + i);
-            }
-
-            private void execute() {
-                switch (operation) {
-                    case ADD -> {
-                        set(pc + 3, getArg(1) + getArg(2));
-                        pc += 4;
-                    }
-                    case MUL -> {
-                        set(pc + 3, getArg(1) * getArg(2));
-                        pc += 4;
-                    }
-                    case INPUT -> {
-                        set(pc + 1, input.next());
-                        pc += 2;
-                    }
-                    case OUTPUT -> {
-                        output.add(getArg(1));
-                        pc += 2;
-                    }
-                    case JUMP_IF_TRUE -> {
-                        if (getArg(1) != 0) {
-                            pc = getArg(2);
-                        } else {
-                            pc += 3;
-                        }
-                    }
-                    case JUMP_IF_FALSE -> {
-                        if (getArg(1) == 0) {
-                            pc = getArg(2);
-                        } else {
-                            pc += 3;
-                        }
-                    }
-                    case LESS_THAN -> {
-                        set(pc + 3, getArg(1) < getArg(2) ? 1 : 0);
-                        pc += 4;
-                    }
-                    case EQUALS -> {
-                        set(pc + 3, getArg(1) == getArg(2) ? 1 : 0);
-                        pc += 4;
-                    }
-                    default -> throw new IllegalStateException("Bad op " + operation);
-                }
-            }
-        }
-    }
-
-    static class Amplifiers {
-
-        final List<Machine> amplifiers;
-
-        Amplifiers(String program) {
-            amplifiers = IntStream.range(0, 5)
-                    .mapToObj(i -> new Machine(program))
-                    .collect(Collectors.toUnmodifiableList());
-        }
-
-        int thrust(List<Integer> phaseSettings) {
-            var settings = phaseSettings.iterator();
-            var output = List.of(0);
-            for (Machine amplifier : amplifiers) {
-                var input = new ArrayList<Integer>();
-                input.add(settings.next());
-                input.addAll(output);
-                output = amplifier.run(input);
-            }
-            return output.get(0);
-        }
-
-        static int maxThrust(String program) {
-            return Permutations.of(List.of(0, 1, 2, 3, 4))
-                    .mapToInt(settings -> new Amplifiers(program).thrust(settings))
-                    .max()
-                    .orElseThrow(() -> new IllegalStateException("Sould not happen"));
-
-        }
-    }
-
     static class ConcurrentMachine implements Runnable {
 
         List<Integer> state;
         final BlockingQueue<Integer> qInput;
         final BlockingQueue<Integer> qOutput;
+        final CountDownLatch endSignal;
         int pc;
 
         enum Operation {ADD, MUL, INPUT, OUTPUT, JUMP_IF_TRUE, JUMP_IF_FALSE, LESS_THAN, EQUALS, HALT}
@@ -213,12 +68,13 @@ public class Day7 {
                 1, pos -> state.get(pos)
         );
 
-        ConcurrentMachine(String program, BlockingQueue<Integer> qInput, BlockingQueue<Integer> qOutput) {
-            state = Stream.of(program.split(","))
+        ConcurrentMachine(String program, BlockingQueue<Integer> qInput, BlockingQueue<Integer> qOutput, CountDownLatch endSignal)  {
+            this.state = Stream.of(program.split(","))
                     .map(Integer::parseInt)
                     .collect(Collectors.toCollection(ArrayList::new));
             this.qInput = qInput;
             this.qOutput = qOutput;
+            this.endSignal = endSignal;
         }
 
         @Override
@@ -230,6 +86,7 @@ public class Day7 {
                     instruction.execute();
                     instruction = new Instruction(state.get(pc));
                 }
+                endSignal.countDown();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -311,60 +168,68 @@ public class Day7 {
 
     static class ConcurrentAmplifiers {
 
+        public static final int NUM_AMPLIFIERS = 5;
+
         final List<ConcurrentMachine> amplifiers;
         final List<BlockingQueue<Integer>> wires;
+        final CountDownLatch endSignal;
 
         ConcurrentAmplifiers(String program) {
-            wires = IntStream.range(0, 5)
+            endSignal = new CountDownLatch(NUM_AMPLIFIERS);
+            wires = IntStream.range(0, NUM_AMPLIFIERS)
                     .mapToObj(dummy -> new LinkedBlockingQueue<Integer>())
                     .collect(Collectors.toUnmodifiableList());
-            amplifiers = IntStream.range(0, 5)
-                    .mapToObj(i -> new ConcurrentMachine(program, wires.get(i % 5), wires.get((i + 1) % 5)))
+            amplifiers = IntStream.range(0, NUM_AMPLIFIERS)
+                    .mapToObj(i -> new ConcurrentMachine(
+                            program,
+                            wires.get(i % NUM_AMPLIFIERS),
+                            wires.get((i + 1) % NUM_AMPLIFIERS),
+                            endSignal))
                     .collect(Collectors.toUnmodifiableList());
         }
 
         int thrust(List<Integer> phaseSettings) {
+            assert phaseSettings.size() == NUM_AMPLIFIERS;
             try {
-                ExecutorService executor = Executors.newFixedThreadPool(10);
-
-                var futures = amplifiers.stream()
-                        .map(executor::submit)
-                        .collect(Collectors.toUnmodifiableList());
-
-                // Set for each machine
-                for (int i = 0; i < 5; i++) {
+                ExecutorService executor = Executors.newFixedThreadPool(NUM_AMPLIFIERS);
+                amplifiers.forEach(executor::submit);
+                for (int i = 0; i < NUM_AMPLIFIERS; i++) {
                     wires.get(i).put(phaseSettings.get(i));
                 }
                 wires.get(0).put(0);
-
-                // Wait for last machine
-                futures.get(4).get();
+                endSignal.await();
                 executor.shutdown();
-
-                // Get output
                 return wires.get(0).take();
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException e) {
                 throw new IllegalStateException("Should not happen");
             }
         }
 
-        static int maxThrust(String program) throws InterruptedException, ExecutionException {
-            return Permutations.of(List.of(5, 6, 7, 8, 9))
+        private static int maxThrust(String program, List<Integer> phaseSettings) throws InterruptedException, ExecutionException {
+            return Permutations.of(phaseSettings)
                     .mapToInt(settings -> new ConcurrentAmplifiers(program).thrust(settings))
                     .max()
                     .orElseThrow(() -> new IllegalStateException("Should not happen"));
         }
+
+        public static int maxThrust1(String program) throws ExecutionException, InterruptedException {
+            return maxThrust(program, List.of(0, 1, 2, 3, 4));
+        }
+
+        public static int maxThrust2(String program) throws ExecutionException, InterruptedException {
+            return maxThrust(program, List.of(5, 6, 7, 8, 9));
+        }
     }
 
-    static void part1() throws IOException {
+    static void part1() throws IOException, ExecutionException, InterruptedException {
         var program = Files.readString(Paths.get("input.txt")).trim();
-        var part1 = Amplifiers.maxThrust(program);
+        var part1 = ConcurrentAmplifiers.maxThrust1(program);
         System.out.println("part1 = " + part1);
     }
 
     static void part2() throws IOException, ExecutionException, InterruptedException {
         var program = Files.readString(Paths.get("input.txt")).trim();
-        var part2 = ConcurrentAmplifiers.maxThrust(program);
+        var part2 = ConcurrentAmplifiers.maxThrust2(program);
         System.out.println("part2 = " + part2);
     }
 
