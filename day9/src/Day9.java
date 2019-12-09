@@ -232,7 +232,19 @@ public class Day9 {
         System.out.println("part1 = " + output);
     }
 
+    static void part2() throws IOException, InterruptedException {
+        var program = Files.readString(Paths.get("input.txt")).trim();
+        var input = new LinkedBlockingQueue<BigInteger>();
+        var output = new LinkedBlockingQueue<BigInteger>();
+        var counter = new CountDownLatch(1);
+        input.put(BigInteger.valueOf(2));
+        var machine = new Day9.ConcurrentMachine(program, input, output, counter);
+        machine.run();
+        System.out.println("par2 = " + output);
+    }
+
     public static void main(String[] args) throws IOException, InterruptedException {
         part1();
+        part2();
     }
 }
