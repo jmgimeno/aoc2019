@@ -1,11 +1,14 @@
-import java.math.BigDecimal;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -15,20 +18,22 @@ public class Day9 {
     static class Memory {
         final List<BigInteger> low;
         final Map<BigInteger, BigInteger> high;
+        BigInteger base;
 
         Memory(List<BigInteger> program) {
             low = program;
             high = new HashMap<>();
+            base = BigInteger.ZERO;
         }
 
-        BigInteger innerGet(BigInteger pos) {
+        private BigInteger innerGet(BigInteger pos) {
             if (pos.compareTo(BigInteger.valueOf(low.size())) < 0)
                 return low.get(pos.intValue());
             else
                 return high.getOrDefault(pos, BigInteger.ZERO);
         }
 
-        void innerSet(BigInteger pos, BigInteger value) {
+        private void innerSet(BigInteger pos, BigInteger value) {
             if (pos.compareTo(BigInteger.valueOf(low.size())) < 0)
                 low.set(pos.intValue(), value);
             else
@@ -39,12 +44,29 @@ public class Day9 {
             return innerGet(position);
         }
 
-        BigInteger getPosition(BigInteger pos) {
-            return innerGet(innerGet(pos));
+        BigInteger getPosition(BigInteger position) {
+            return innerGet(innerGet(position));
         }
 
-        void set(BigInteger pos, BigInteger value) {
+        BigInteger getRelative(BigInteger position) {
+            return innerGet(base.add(innerGet(position)));
+        }
+
+        void moveBase(BigInteger increment) {
+            base = base.add(increment);
+        }
+
+        public void setPosition(BigInteger pos, BigInteger value) {
             innerSet(innerGet(pos), value);
+        }
+
+        public void setImmediate(BigInteger pos, BigInteger value) {
+            innerSet(pos, value);
+        }
+
+        public void setRelative(BigInteger pos, BigInteger value) {
+            innerSet(base.add(innerGet(pos)), value);
+
         }
     }
 
@@ -58,8 +80,8 @@ public class Day9 {
         BigInteger pc;
         boolean halted;
 
-        enum Operation {ADD, MUL, INPUT, OUTPUT, JUMP_IF_TRUE, JUMP_IF_FALSE, LESS_THAN, EQUALS, HALT}
-        enum Mode {POSITION, IMMEDIATE}
+        enum Operation {ADD, MUL, INPUT, OUTPUT, JUMP_IF_TRUE, JUMP_IF_FALSE, LESS_THAN, EQUALS, ADJUST, HALT}
+        enum Mode {POSITION, IMMEDIATE, RELATIVE}
 
         static Map<Integer, Operation> operationDecoder = Map.of(
                 1, Operation.ADD,
@@ -70,12 +92,14 @@ public class Day9 {
                 6, Operation.JUMP_IF_FALSE,
                 7, Operation.LESS_THAN,
                 8, Operation.EQUALS,
+                9, Operation.ADJUST,
                 99, Operation.HALT
         );
 
         static Map<Integer, Mode> modeDecoder = Map.of(
                 0, Mode.POSITION,
-                1, Mode.IMMEDIATE
+                1, Mode.IMMEDIATE,
+                2, Mode.RELATIVE
         );
 
         ConcurrentMachine(String program, BlockingQueue<BigInteger> qInput, BlockingQueue<BigInteger> qOutput, CountDownLatch endSignal)  {
@@ -117,58 +141,77 @@ public class Day9 {
                         .collect(Collectors.toUnmodifiableList());
             }
 
-            BigInteger getArg(int i) {
+            @Override
+            public String toString() {
+                return "Instruction{" +
+                        "operation=" + operation +
+                        ", accessors=" + accessors +
+                        '}';
+            }
+
+            BigInteger get(int i) {
                 return switch(accessors.get(i - 1)) {
-                    case POSITION -> memory.getPosition(PC(i));
-                    case IMMEDIATE -> memory.getImmediate(PC(i));
+                    case POSITION -> memory.getPosition(PC_(i));
+                    case IMMEDIATE -> memory.getImmediate(PC_(i));
+                    case RELATIVE -> memory.getRelative(PC_(i));
                 };
             }
 
-            BigInteger PC(int n) {
+            void set(int i, BigInteger value) {
+                switch (accessors.get(2)) {
+                    case POSITION -> memory.setPosition(PC_(i), value);
+                    case IMMEDIATE -> memory.setImmediate(PC_(i), value);
+                    case RELATIVE -> memory.setRelative(PC_(i), value);
+                }
+            }
+
+            BigInteger PC_(int n) {
                 return BigInteger.valueOf(n).add(pc);
             }
 
             private void execute() throws InterruptedException {
                 switch (operation) {
                     case ADD -> {
-                        memory.set(PC(3), getArg(1).add(getArg(2)));
-                        pc = PC(4);
+                        set(3, get(1).add(get(2)));
+                        pc = PC_(4);
                     }
                     case MUL -> {
-                        memory.set(PC(3), getArg(1).multiply(getArg(2)));
-                        pc = PC(4);
+                        set(3, get(1).multiply(get(2)));
+                        pc = PC_(4);
                     }
                     case INPUT -> {
-                        var read = qInput.take();
-                        memory.set(PC(1), read);
-                        pc = PC(2);
+                        set(1, qInput.take());
+                        pc = PC_(2);
                     }
                     case OUTPUT -> {
-                        var write = getArg(1);
-                        qOutput.put(write);
-                        pc = PC(2);
+                        qOutput.put(get(1));
+                        pc = PC_(2);
                     }
                     case JUMP_IF_TRUE -> {
-                        if (!getArg(1).equals(BigInteger.ZERO)) {
-                            pc = getArg(2);
+                        if (!get(1).equals(BigInteger.ZERO)) {
+                            pc = get(2);
                         } else {
-                            pc = PC(3);
+                            pc = PC_(3);
                         }
                     }
                     case JUMP_IF_FALSE -> {
-                        if (getArg(1).equals(BigInteger.ZERO)) {
-                            pc = getArg(2);
+                        if (get(1).equals(BigInteger.ZERO)) {
+                            pc = get(2);
                         } else {
-                            pc = PC(3);
+                            pc = PC_(3);
                         }
                     }
                     case LESS_THAN -> {
-                        memory.set(PC(3), getArg(1).compareTo(getArg(2)) < 0 ? BigInteger.ONE : BigInteger.ZERO);
-                        pc = PC(4);
+                        set(3, get(1).compareTo(get(2)) < 0 ? BigInteger.ONE : BigInteger.ZERO);
+                        pc = PC_(4);
                     }
                     case EQUALS -> {
-                        memory.set(PC(3), getArg(1).equals(getArg(2)) ? BigInteger.ONE : BigInteger.ZERO);
-                        pc = PC(4);
+                        set(3, get(1).equals(get(2)) ? BigInteger.ONE : BigInteger.ZERO);
+                        pc = PC_(4);
+                    }
+                    case ADJUST -> {
+                        memory.moveBase(get(1));
+                        pc = PC_(2);
                     }
                     case HALT -> {
                         halted = true;
@@ -176,5 +219,20 @@ public class Day9 {
                 }
             }
         }
+    }
+
+    static void part1() throws IOException, InterruptedException {
+        var program = Files.readString(Paths.get("input.txt")).trim();
+        var input = new LinkedBlockingQueue<BigInteger>();
+        var output = new LinkedBlockingQueue<BigInteger>();
+        var counter = new CountDownLatch(1);
+        input.put(BigInteger.valueOf(1));
+        var machine = new Day9.ConcurrentMachine(program, input, output, counter);
+        machine.run();
+        System.out.println("part1 = " + output);
+    }
+
+    public static void main(String[] args) throws IOException, InterruptedException {
+        part1();
     }
 }
