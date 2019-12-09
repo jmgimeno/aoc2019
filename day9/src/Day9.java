@@ -1,9 +1,11 @@
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
-import java.util.function.IntUnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -11,33 +13,49 @@ import java.util.stream.Stream;
 public class Day9 {
 
     static class Memory {
-        final List<Integer> low;
+        final List<BigInteger> low;
+        final Map<BigInteger, BigInteger> high;
 
-        Memory(List<Integer> program) {
+        Memory(List<BigInteger> program) {
             low = program;
+            high = new HashMap<>();
         }
 
-        int getPosition(int pos) {
-            return low.get(low.get(pos));
+        BigInteger innerGet(BigInteger pos) {
+            if (pos.compareTo(BigInteger.valueOf(low.size())) < 0)
+                return low.get(pos.intValue());
+            else
+                return high.getOrDefault(pos, BigInteger.ZERO);
         }
 
-        int getImmediate(int position) {
-            return low.get(position);
+        void innerSet(BigInteger pos, BigInteger value) {
+            if (pos.compareTo(BigInteger.valueOf(low.size())) < 0)
+                low.set(pos.intValue(), value);
+            else
+                high.put(pos, value);
         }
 
-        void set(int pos, int value) {
-            low.set(low.get(pos), value);
+        BigInteger getImmediate(BigInteger position) {
+            return innerGet(position);
+        }
+
+        BigInteger getPosition(BigInteger pos) {
+            return innerGet(innerGet(pos));
+        }
+
+        void set(BigInteger pos, BigInteger value) {
+            innerSet(innerGet(pos), value);
         }
     }
 
     static class ConcurrentMachine implements Runnable {
 
         final Memory memory;
-        final BlockingQueue<Integer> qInput;
-        final BlockingQueue<Integer> qOutput;
+        final BlockingQueue<BigInteger> qInput;
+        final BlockingQueue<BigInteger> qOutput;
         final CountDownLatch endSignal;
 
-        int pc;
+        BigInteger pc;
         boolean halted;
 
         enum Operation {ADD, MUL, INPUT, OUTPUT, JUMP_IF_TRUE, JUMP_IF_FALSE, LESS_THAN, EQUALS, HALT}
@@ -60,10 +78,10 @@ public class Day9 {
                 1, Mode.IMMEDIATE
         );
 
-        ConcurrentMachine(String program, BlockingQueue<Integer> qInput, BlockingQueue<Integer> qOutput, CountDownLatch endSignal)  {
+        ConcurrentMachine(String program, BlockingQueue<BigInteger> qInput, BlockingQueue<BigInteger> qOutput, CountDownLatch endSignal)  {
             this.memory = new Memory(
                     Stream.of(program.split(","))
-                    .map(Integer::parseInt)
+                    .map(BigInteger::new)
                     .collect(Collectors.toCollection(ArrayList::new)));
             this.qInput = qInput;
             this.qOutput = qOutput;
@@ -73,11 +91,11 @@ public class Day9 {
         @Override
         public void run() {
             try {
-                pc = 0;
-                Instruction instruction = new Instruction(memory.getImmediate(pc));
+                pc = BigInteger.ZERO;
+                Instruction instruction = new Instruction(memory.getImmediate(pc).intValue());
                 while (!halted) {
                     instruction.execute();
-                    instruction = new Instruction(memory.getImmediate(pc));
+                    instruction = new Instruction(memory.getImmediate(pc).intValue());
                 }
                 endSignal.countDown();
             } catch (InterruptedException e) {
@@ -99,54 +117,58 @@ public class Day9 {
                         .collect(Collectors.toUnmodifiableList());
             }
 
-            int getArg(int i) {
+            BigInteger getArg(int i) {
                 return switch(accessors.get(i - 1)) {
-                    case POSITION -> memory.getPosition(pc + i);
-                    case IMMEDIATE -> memory.getImmediate(pc + i);
+                    case POSITION -> memory.getPosition(PC(i));
+                    case IMMEDIATE -> memory.getImmediate(PC(i));
                 };
+            }
+
+            BigInteger PC(int n) {
+                return BigInteger.valueOf(n).add(pc);
             }
 
             private void execute() throws InterruptedException {
                 switch (operation) {
                     case ADD -> {
-                        memory.set(pc + 3, getArg(1) + getArg(2));
-                        pc += 4;
+                        memory.set(PC(3), getArg(1).add(getArg(2)));
+                        pc = PC(4);
                     }
                     case MUL -> {
-                        memory.set(pc + 3, getArg(1) * getArg(2));
-                        pc += 4;
+                        memory.set(PC(3), getArg(1).multiply(getArg(2)));
+                        pc = PC(4);
                     }
                     case INPUT -> {
                         var read = qInput.take();
-                        memory.set(pc + 1, read);
-                        pc += 2;
+                        memory.set(PC(1), read);
+                        pc = PC(2);
                     }
                     case OUTPUT -> {
                         var write = getArg(1);
                         qOutput.put(write);
-                        pc += 2;
+                        pc = PC(2);
                     }
                     case JUMP_IF_TRUE -> {
-                        if (getArg(1) != 0) {
+                        if (!getArg(1).equals(BigInteger.ZERO)) {
                             pc = getArg(2);
                         } else {
-                            pc += 3;
+                            pc = PC(3);
                         }
                     }
                     case JUMP_IF_FALSE -> {
-                        if (getArg(1) == 0) {
+                        if (getArg(1).equals(BigInteger.ZERO)) {
                             pc = getArg(2);
                         } else {
-                            pc += 3;
+                            pc = PC(3);
                         }
                     }
                     case LESS_THAN -> {
-                        memory.set(pc + 3, getArg(1) < getArg(2) ? 1 : 0);
-                        pc += 4;
+                        memory.set(PC(3), getArg(1).compareTo(getArg(2)) < 0 ? BigInteger.ONE : BigInteger.ZERO);
+                        pc = PC(4);
                     }
                     case EQUALS -> {
-                        memory.set(pc + 3, getArg(1) == getArg(2) ? 1 : 0);
-                        pc += 4;
+                        memory.set(PC(3), getArg(1).equals(getArg(2)) ? BigInteger.ONE : BigInteger.ZERO);
+                        pc = PC(4);
                     }
                     case HALT -> {
                         halted = true;

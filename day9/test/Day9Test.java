@@ -1,6 +1,7 @@
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -15,26 +16,30 @@ class Day9Test {
     @Test
     void day5Part1() throws IOException, InterruptedException {
         var program = Files.readString(Paths.get("input-day5.txt")).trim();
-        var input = new LinkedBlockingQueue<Integer>();
-        var output = new LinkedBlockingQueue<Integer>();
+        var input = new LinkedBlockingQueue<BigInteger>();
+        var output = new LinkedBlockingQueue<BigInteger>();
         var counter = new CountDownLatch(1);
-        input.put(1);
+        input.put(BigInteger.valueOf(1));
         var machine = new Day9.ConcurrentMachine(program, input, output, counter);
         machine.run();
-        var queueAsList = output.stream().collect(Collectors.toUnmodifiableList());
-        assertEquals(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0, 12234644), queueAsList);
+        var queueAsList = output.stream()
+                .collect(Collectors.toUnmodifiableList());
+        var expected = List.of(0, 0, 0, 0, 0, 0, 0, 0, 0, 12234644).stream()
+                .map(BigInteger::valueOf)
+                .collect(Collectors.toUnmodifiableList());
+        assertEquals(expected, queueAsList);
     }
 
     @Test
     void day5Part2() throws IOException, InterruptedException {
         var program = Files.readString(Paths.get("input-day5.txt")).trim();
-        var input = new LinkedBlockingQueue<Integer>();
-        var output = new LinkedBlockingQueue<Integer>();
+        var input = new LinkedBlockingQueue<BigInteger>();
+        var output = new LinkedBlockingQueue<BigInteger>();
         var counter = new CountDownLatch(1);
-        input.put(5);
+        input.put(BigInteger.valueOf(5));
         var machine = new Day9.ConcurrentMachine(program, input, output, counter);
         machine.run();
         var queueAsList = output.stream().collect(Collectors.toUnmodifiableList());
-        assertEquals(List.of(3508186), queueAsList);
+        assertEquals(List.of(BigInteger.valueOf(3508186)), queueAsList);
     }
 }
