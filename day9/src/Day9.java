@@ -158,7 +158,7 @@ public class Day9 {
             }
 
             void set(int i, BigInteger value) {
-                switch (accessors.get(2)) {
+                switch (accessors.get(i-1)) {
                     case POSITION -> memory.setPosition(PC_(i), value);
                     case IMMEDIATE -> memory.setImmediate(PC_(i), value);
                     case RELATIVE -> memory.setRelative(PC_(i), value);
