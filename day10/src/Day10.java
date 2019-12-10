@@ -1,9 +1,7 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.function.Predicate.not;
@@ -49,12 +47,13 @@ public class Day10 {
         }
     }
 
-    static class Angle {
+    static class Angle implements Comparable<Angle> {
 
         final int dx;
         final int dy;
 
         public Angle(int dx, int dy) {
+            assert dx != 0 || dy != 0;
             this.dx = dx;
             this.dy = dy;
         }
@@ -75,8 +74,7 @@ public class Day10 {
 
         @Override
         public int hashCode() {
-            // Seems to work but dangerous
-            return Double.valueOf((double) Math.abs(dx) / Math.abs(dy)).hashCode();
+            return Double.valueOf(angleToVertical()).hashCode();
         }
 
         @Override
@@ -84,7 +82,24 @@ public class Day10 {
             return "Angle{" +
                     "dx=" + dx +
                     ", dy=" + dy +
+                    ", phi=" + angleToVertical() +
                     '}';
+        }
+
+        public double angleToVertical() {
+            // y axis is inverted
+            if (dx == 0) return dy < 0 ? 0.0 : Math.PI;                       // vertical
+            else if (dy == 0) return dx > 0 ? Math.PI / 2 : 3 * Math.PI / 2;  // horizontal
+            double phi = Math.atan((double) Math.abs(dx) / Math.abs(dy));
+            if (dx > 0 && dy < 0) return phi;                 // 1st quadrant
+            else if (dx > 0 && dy > 0) return Math.PI - phi;  // 2nd quadrant
+            else if (dx < 0 && dy > 0) return Math.PI + phi;  // 3rd quadrant
+            else return 2 * Math.PI - phi;                    // 4th quadrant
+        }
+
+        @Override
+        public int compareTo(Angle o) {
+            return Double.compare(angleToVertical(), o.angleToVertical());
         }
     }
 
@@ -118,18 +133,68 @@ public class Day10 {
         }
 
         public Point maxPoint() {
-            return null;
+            return asteroids.stream()
+                    .max(Comparator.comparingInt(this::numFrom))
+                    .orElseThrow();
         }
+
+        public List<Point> findTargets(Point laser, int maxSize) {
+            var groups = asteroids.stream()
+                            .filter(not(laser::equals))
+                            .sorted(Comparator.comparing(laser::distance))
+                            .collect(Collectors.groupingBy(laser::angleTo));
+            var traverse = new ArrayList<Point>();
+            do {
+                var sortedAngles = groups.keySet().stream()
+                        .sorted()
+                        .collect(Collectors.toUnmodifiableList());
+                for (Angle angle : sortedAngles) {
+                    var pointsAtAngle = groups.get(angle);
+                    var closestPoint = pointsAtAngle.remove(0);
+                    traverse.add(closestPoint);
+                    if (pointsAtAngle.isEmpty())
+                        groups.remove(angle);
+                    if (traverse.size() == maxSize)
+                        return traverse;
+                }
+            } while (!groups.isEmpty());
+            return traverse;
+        }
+    }
+
+    static Point findLaser(String map) {
+        int y = 0;
+        for (var line : map.split("\n")) {
+            for (int x = 0; x < line.length(); x++) {
+                if (line.charAt(x) == 'X')
+                    return new Point(x, y);
+            }
+            y += 1;
+        }
+        throw new IllegalStateException("Should not happen");
     }
 
     static void part1() throws IOException {
         var map = Files.readString(Paths.get("input.txt")).trim();
         var region = new Region(map);
-        var part1 = region.maxDetected();
-        System.out.println("part1 = " + part1);
+        var point = region.maxPoint();
+        var num = region.maxDetected();
+        System.out.println("part1 = " + point + " (" + num + ")");
+    }
+
+    static void part2() throws IOException {
+        var map = Files.readString(Paths.get("input.txt")).trim();
+        var region = new Region(map);
+        var laser = region.maxPoint();
+        var targets = region.findTargets(laser, 200);
+        var target200 = targets.get(199);
+        System.out.println("target200 = " + target200);
+        var part2 = 100 * target200.x + target200.y;
+        System.out.println("part2 = " + part2);
     }
 
     public static void main(String[] args) throws IOException {
         part1();
+        part2();
     }
 }
