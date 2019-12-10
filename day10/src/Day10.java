@@ -144,16 +144,20 @@ public class Day10 {
                             .sorted(Comparator.comparing(laser::distance))
                             .collect(Collectors.groupingBy(laser::angleTo));
             var traverse = new ArrayList<Point>();
+            var sortedAngles = groups.keySet().stream()
+                    .sorted()
+                    .collect(Collectors.toCollection(LinkedList::new));
             do {
-                var sortedAngles = groups.keySet().stream()
-                        .sorted()
-                        .collect(Collectors.toUnmodifiableList());
-                for (Angle angle : sortedAngles) {
+                var itAngles = sortedAngles.iterator();
+                while (itAngles.hasNext()) {
+                    var angle = itAngles.next();
                     var pointsAtAngle = groups.get(angle);
                     var closestPoint = pointsAtAngle.remove(0);
-                    traverse.add(closestPoint);
-                    if (pointsAtAngle.isEmpty())
+                    if (pointsAtAngle.isEmpty()) {
                         groups.remove(angle);
+                        itAngles.remove();
+                    }
+                    traverse.add(closestPoint);
                     if (traverse.size() == maxSize)
                         return traverse;
                 }
