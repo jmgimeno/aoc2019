@@ -58,8 +58,6 @@ Build a new emergency hull painting robot and run the Intcode program on it. How
 
 Your puzzle answer was 2141.
 
-The first half of this puzzle is complete! It provides one gold star: *
-
 --- Part Two ---
 You're not sure what it's trying to paint, but it's definitely not a registration identifier. The Space Police are getting impatient.
 
@@ -67,4 +65,10 @@ Checking your external ship cameras again, you notice a white panel marked "emer
 
 Based on the Space Law Space Brochure that the Space Police attached to one of your windows, a valid registration identifier is always eight capital letters. After starting the robot on a single white panel instead, what registration identifier does it paint on your hull?
 
-Although it hasn't changed, you can still get your puzzle input.
+Your puzzle answer was RPJCFZKF.
+
+Both parts of this puzzle are complete! They provide two gold stars: **
+
+At this point, you should return to your Advent calendar and try another puzzle.
+
+If you still want to see it, you can get your puzzle input.

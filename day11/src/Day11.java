@@ -325,6 +325,34 @@ class Grid {
     public int numPainted() {
         return panels.size();
     }
+
+    public String render() {
+        var whites = panels.keySet().stream()
+                        .filter(pos -> panels.get(pos) == Color.WHITE)
+                        .collect(Collectors.toUnmodifiableList());
+        var screen = screen(whites);
+        return render(screen);
+    }
+
+    private boolean[][] screen(List<Position> whites) {
+        var topMost = whites.stream().mapToInt(pos -> pos.y).min().orElseThrow();
+        var leftMost = whites.stream().mapToInt(pos -> pos.x).min().orElseThrow();
+        var bottomMost = whites.stream().mapToInt(pos -> pos.y).max().orElseThrow();
+        var rightMost = whites.stream().mapToInt(pos -> pos.x).max().orElseThrow();
+        var matrix = new boolean[bottomMost-topMost+1][rightMost-leftMost+1];
+        whites.forEach(position -> matrix[position.y-topMost][position.x-leftMost] = true);
+        return matrix;
+    }
+
+    private String render(boolean[][] matrix) {
+        var builder = new StringBuilder();
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++)
+                builder.append(matrix[i][j] ? "*" : " ");
+            builder.append("\n");
+        }
+        return builder.toString();
+    }
 }
 
 class Robot {
@@ -370,7 +398,18 @@ public class Day11 {
         System.out.println("part1 = " + grid.numPainted());
     }
 
+    static void part2() throws IOException, InterruptedException {
+        var program = Files.readString(Paths.get("input.txt")).trim();
+        var robot = new Robot(program);
+        var grid = new Grid();
+        grid.paint(Position.xy(0,0), Color.WHITE);
+        robot.paintHull(grid);
+        System.out.println("part2");
+        System.out.println(grid.render());
+    }
+
     public static void main(String[] args) throws IOException, InterruptedException {
         part1();
+        part2();
     }
 }
