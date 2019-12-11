@@ -88,13 +88,13 @@ public class Day10 {
 
         public double angleToVertical() {
             // y axis is inverted
-            if (dx == 0) return dy < 0 ? 0.0 : Math.PI;                       // vertical
-            else if (dy == 0) return dx > 0 ? Math.PI / 2 : 3 * Math.PI / 2;  // horizontal
-            double phi = Math.atan((double) Math.abs(dx) / Math.abs(dy));
-            if (dx > 0 && dy < 0) return phi;                 // 1st quadrant
-            else if (dx > 0 && dy > 0) return Math.PI - phi;  // 2nd quadrant
-            else if (dx < 0 && dy > 0) return Math.PI + phi;  // 3rd quadrant
-            else return 2 * Math.PI - phi;                    // 4th quadrant
+            if (dx == 0) return dy < 0 ? 0.0 : Math.PI;                       // y-axis
+            else if (dy == 0) return dx > 0 ? Math.PI / 2 : 3 * Math.PI / 2;  // x-axis
+            double phi = Math.atan(Math.abs((double) dx / dy));               // in (0,PI/2)
+            if (dx > 0 && dy < 0) return phi;                                 // 1st quadrant
+            else if (dx > 0) return Math.PI - phi;                            // 2nd quadrant
+            else if (dy > 0) return Math.PI + phi;                            // 3rd quadrant
+            else return 2 * Math.PI - phi;                                    // 4th quadrant
         }
 
         @Override
