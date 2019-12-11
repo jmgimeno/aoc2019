@@ -17,8 +17,19 @@ public class Day10 {
             this.y = y;
         }
 
-        Angle angleTo(Point other) {
-            return new Angle(other.x - x, other.y - y);
+        static double angleToVertical(int dx, int dy) {
+            // y axis is inverted
+            if (dx == 0) return dy < 0 ? 0.0 : Math.PI;                       // y-axis
+            else if (dy == 0) return dx > 0 ? Math.PI / 2 : 3 * Math.PI / 2;  // x-axis
+            double phi = Math.atan(Math.abs((double) dx / dy));               // in (0,PI/2)
+            if (dx > 0 && dy < 0) return phi;                                 // 1st quadrant
+            else if (dx > 0) return Math.PI - phi;                            // 2nd quadrant
+            else if (dy > 0) return Math.PI + phi;                            // 3rd quadrant
+            else return 2 * Math.PI - phi;                                    // 4th quadrant
+        }
+
+        double angle(Point other) {
+            return angleToVertical(other.x - x, other.y - y);
         }
 
         int distance(Point other) {
@@ -47,61 +58,6 @@ public class Day10 {
         }
     }
 
-    static class Angle implements Comparable<Angle> {
-
-        final int dx;
-        final int dy;
-
-        public Angle(int dx, int dy) {
-            assert dx != 0 || dy != 0;
-            this.dx = dx;
-            this.dy = dy;
-        }
-
-        private boolean sameSign(int n1, int n2) {
-            return Integer.signum(n1) == Integer.signum(n2);
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            if (other == null) return false;
-            if (!(other instanceof Angle)) return false;
-            Angle otherAngle = (Angle) other;
-            return sameSign(dx, otherAngle.dx)
-                    && sameSign(dy, otherAngle.dy)
-                    && dx * otherAngle.dy == otherAngle.dx * dy;
-        }
-
-        @Override
-        public int hashCode() {
-            return Double.valueOf(angleToVertical()).hashCode();
-        }
-
-        @Override
-        public String toString() {
-            return "Angle{" +
-                    "dx=" + dx +
-                    ", dy=" + dy +
-                    ", phi=" + angleToVertical() +
-                    '}';
-        }
-
-        public double angleToVertical() {
-            // y axis is inverted
-            if (dx == 0) return dy < 0 ? 0.0 : Math.PI;                       // y-axis
-            else if (dy == 0) return dx > 0 ? Math.PI / 2 : 3 * Math.PI / 2;  // x-axis
-            double phi = Math.atan(Math.abs((double) dx / dy));               // in (0,PI/2)
-            if (dx > 0 && dy < 0) return phi;                                 // 1st quadrant
-            else if (dx > 0) return Math.PI - phi;                            // 2nd quadrant
-            else if (dy > 0) return Math.PI + phi;                            // 3rd quadrant
-            else return 2 * Math.PI - phi;                                    // 4th quadrant
-        }
-
-        @Override
-        public int compareTo(Angle o) {
-            return Double.compare(angleToVertical(), o.angleToVertical());
-        }
-    }
 
     public static class Region {
         final List<Point> asteroids;
@@ -121,7 +77,7 @@ public class Day10 {
         int numFrom(Point reference) {
             return asteroids.stream()
                     .filter(not(reference::equals))
-                    .map(reference::angleTo)
+                    .map(reference::angle)
                     .collect(Collectors.toSet()).size();
         }
 
@@ -142,7 +98,7 @@ public class Day10 {
             var groups = asteroids.stream()
                             .filter(not(laser::equals))
                             .sorted(Comparator.comparing(laser::distance))
-                            .collect(Collectors.groupingBy(laser::angleTo));
+                            .collect(Collectors.groupingBy(laser::angle));
             var traverse = new ArrayList<Point>();
             var sortedAngles = groups.keySet().stream()
                     .sorted()
