@@ -19,6 +19,7 @@ class ConcurrentMachine implements Runnable {
     boolean halted;
 
     enum Operation {ADD, MUL, INPUT, OUTPUT, JUMP_IF_TRUE, JUMP_IF_FALSE, LESS_THAN, EQUALS, ADJUST, HALT}
+
     enum Mode {POSITION, IMMEDIATE, RELATIVE}
 
     static Map<Integer, Operation> operationDecoder = Map.of(
@@ -156,7 +157,7 @@ class ConcurrentMachine implements Runnable {
         }
 
         BigInteger get(int i) {
-            return switch(accessors.get(i - 1)) {
+            return switch (accessors.get(i - 1)) {
                 case POSITION -> memory.getPosition(PC_(i));
                 case IMMEDIATE -> memory.getImmediate(PC_(i));
                 case RELATIVE -> memory.getRelative(PC_(i));
@@ -164,7 +165,7 @@ class ConcurrentMachine implements Runnable {
         }
 
         void set(int i, BigInteger value) {
-            switch (accessors.get(i-1)) {
+            switch (accessors.get(i - 1)) {
                 case POSITION -> memory.setPosition(PC_(i), value);
                 case IMMEDIATE -> memory.setImmediate(PC_(i), value);
                 case RELATIVE -> memory.setRelative(PC_(i), value);
@@ -227,24 +228,33 @@ class ConcurrentMachine implements Runnable {
     }
 }
 
-class XY {
+class Position {
     final int x;
     final int y;
 
-    static XY xy(int x, int y) {
-        return new XY(x, y);
+    static Position xy(int x, int y) {
+        return new Position(x, y);
     }
 
-    XY(int x, int y) {
+    Position(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+
+    Position step(Orientation direction) {
+        return switch(direction) {
+            case RIGHT -> xy(x+1, y);
+            case DOWN  -> xy(x, y+1);
+            case LEFT  -> xy(x-1, y);
+            case UP    -> xy(x, y-1);
+        };
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        XY xy = (XY) o;
+        Position xy = (Position) o;
         return x == xy.x &&
                 y == xy.y;
     }
@@ -253,32 +263,67 @@ class XY {
     public int hashCode() {
         return Objects.hash(x, y);
     }
-
-    public XY step(Orientation orientation) {
-        return null;
-    }
 }
 
-enum Orientation {R, D, L, U;
+enum Orientation {
+    RIGHT {
+        @Override
+        public Orientation turn(Turn turn) {
+            return switch (turn) {
+                case LEFT -> UP;
+                case RIGHT -> DOWN;
+            };
+        }
+    },
+    DOWN {
+        @Override
+        public Orientation turn(Turn turn) {
+            return switch (turn) {
+                case LEFT -> RIGHT;
+                case RIGHT -> LEFT;
+            };
+        }
+    },
+    LEFT {
+        @Override
+        public Orientation turn(Turn turn) {
+            return switch (turn) {
+                case LEFT -> DOWN;
+                case RIGHT -> UP;
+            };
+        }
+    },
+    UP {
+        @Override
+        public Orientation turn(Turn turn) {
+            return switch (turn) {
+                case LEFT -> LEFT;
+                case RIGHT -> RIGHT;
+            };
+        }
+    };
 
-    public Orientation turn(Turn turn) {
-        return null;
-    }
+    abstract Orientation turn(Turn turn);
 };
 
 enum Turn {LEFT, RIGHT};
+
 enum Color {WHITE, BLACK}
 
 class Grid {
 
-    Map<XY, Color> panels;
+    Map<Position, Color> panels = new HashMap<>();
 
-    Color get(XY xy) {
-        return panels.getOrDefault(xy, Color.BLACK);
+    Color get(Position position) {
+        return panels.getOrDefault(position, Color.BLACK);
     }
 
-    public void paint(XY position, Color color) {
+    public void paint(Position position, Color color) {
+        panels.put(position, color);
+    }
 
+    public int numPainted() {
+        return panels.size();
     }
 }
 
@@ -299,10 +344,9 @@ class Robot {
         executorService.submit(brain);
     }
 
-    Grid paintHull() throws InterruptedException {
-        var grid = new Grid();
-        var position = XY.xy(0, 0);
-        var orientation = Orientation.U;
+    void paintHull(Grid grid) throws InterruptedException {
+        var position = Position.xy(0, 0);
+        var orientation = Orientation.UP;
         do {
             var color = grid.get(position);
             brainInput.put(color == Color.BLACK ? BigInteger.ZERO : BigInteger.ONE);
@@ -312,17 +356,21 @@ class Robot {
             orientation = orientation.turn(turn);
             position = position.step(orientation);
         } while (finishSignal.getCount() != 0);
-        return grid;
+        executorService.shutdown();
     }
 }
 
 public class Day11 {
 
-    static void part1() throws IOException {
+    static void part1() throws IOException, InterruptedException {
         var program = Files.readString(Paths.get("input.txt")).trim();
+        var robot = new Robot(program);
+        var grid = new Grid();
+        robot.paintHull(grid);
+        System.out.println("part1 = " + grid.numPainted());
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         part1();
     }
 }
