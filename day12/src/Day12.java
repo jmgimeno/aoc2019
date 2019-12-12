@@ -26,13 +26,13 @@ public class Day12 {
         System.out.println("part2 = " + steps);
     }
 
-    static int stepsToRepetition(List<Moon> moons) {
+    static long stepsToRepetition(List<Moon> moons) {
         var cluster = new Cluster(moons);
         var history = new HashSet<Cluster>();
-        var steps = 0;
+        var steps = 0L;
         history.add(cluster);
         while (true) {
-            steps += 1;
+            steps += 1L;
             cluster = cluster.step();
             if (!history.add(cluster))
                 return steps;

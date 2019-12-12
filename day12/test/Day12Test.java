@@ -15,6 +15,6 @@ class Day12Test {
                 .map(Moon::new)
                 .collect(Collectors.toUnmodifiableList());
         var steps = Day12.stepsToRepetition(moons);
-        assertEquals(2772, steps);
+        assertEquals(2772L, steps);
     }
 }
