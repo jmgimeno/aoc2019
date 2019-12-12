@@ -8,6 +8,7 @@ import static java.lang.Integer.signum;
 public class Vector {
 
     static Pattern pattern = Pattern.compile("<x=(-?\\d+), y=(-?\\d+), z=(-?\\d+)>");
+
     final int x, y, z;
 
     public Vector() {
