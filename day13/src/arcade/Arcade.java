@@ -7,17 +7,15 @@ import java.util.concurrent.*;
 
 public class Arcade {
 
-    final static int FRAME_SIZE = 20 * 44;
-
     final ExecutorService executorService;
-    final BlockingQueue<BigInteger> brainInput;
+    final JoyStick brainInput;
     final BlockingQueue<BigInteger> brainOutput;
     final CountDownLatch finishSignal;
     final ConcurrentMachine brain;
 
     public Arcade(String program) {
         executorService = Executors.newFixedThreadPool(5);
-        brainInput = new LinkedBlockingQueue<>();
+        brainInput = new JoyStick();
         brainOutput = new LinkedBlockingQueue<>();
         finishSignal = new CountDownLatch(1);
         brain = new ConcurrentMachine(program, brainInput, brainOutput, finishSignal);
@@ -25,6 +23,7 @@ public class Arcade {
     }
 
     public void play(Screen screen) throws InterruptedException {
+        int xBall = -1, xPaddle = -1;
         do {
             var x = brainOutput.take().intValue();
             var y = brainOutput.take().intValue();
@@ -32,8 +31,27 @@ public class Arcade {
             if (x == -1 && y == 0) {
                 screen.updateScore(info);
                 System.out.println(screen.render());
-            } else
-                screen.draw(new Position(x, y), TileId.fromInt(info));
+            } else {
+                var tileId = TileId.fromInt(info);
+                screen.draw(new Position(x, y), tileId);
+                if (tileId == TileId.BALL) {
+                    xBall = x;
+                    System.out.println("xBall = " + xBall);
+                    if (xPaddle != -1) {
+                        var joyStick = Integer.signum(xBall - xPaddle);
+                        System.out.println("joyStick = " + joyStick);
+                        brainInput.put(joyStick);
+                    }
+                } else if (tileId == TileId.HORIZONTAL_PADDLE) {
+                    xPaddle = x;
+                    System.out.println("xPaddle = " + xPaddle);
+                    if (xBall != -1) {
+                        var joyStick = Integer.signum(xBall - xPaddle);
+                        System.out.println("joyStick = " + joyStick);
+                        brainInput.put(joyStick);
+                    }
+                }
+            }
         } while (finishSignal.getCount() != 0);
         executorService.shutdown();
     }

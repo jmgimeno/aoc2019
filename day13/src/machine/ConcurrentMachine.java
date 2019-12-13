@@ -1,5 +1,7 @@
 package machine;
 
+import arcade.JoyStick;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -15,7 +17,7 @@ import java.util.stream.Stream;
 public class ConcurrentMachine implements Runnable {
 
     final Memory memory;
-    final BlockingQueue<BigInteger> qInput;
+    final JoyStick qInput;
     final BlockingQueue<BigInteger> qOutput;
     final CountDownLatch endSignal;
 
@@ -49,17 +51,10 @@ public class ConcurrentMachine implements Runnable {
             2, Mode.RELATIVE
     );
 
-    public ConcurrentMachine(
-            String program,
-            BlockingQueue<BigInteger> qInput,
-            BlockingQueue<BigInteger> qOutput) {
-
-        this(program, qInput, qOutput, null);
-    }
 
     public ConcurrentMachine(
             String program,
-            BlockingQueue<BigInteger> qInput,
+            JoyStick qInput,
             BlockingQueue<BigInteger> qOutput,
             CountDownLatch endSignal) {
 
@@ -195,8 +190,7 @@ public class ConcurrentMachine implements Runnable {
                     pc = PC_(4);
                 }
                 case INPUT -> {
-                    var value = qInput.poll(100, TimeUnit.MILLISECONDS);
-                    set(1, value == null ? BigInteger.ZERO : value);
+                    set(1, qInput.take());
                     pc = PC_(2);
                 }
                 case OUTPUT -> {
