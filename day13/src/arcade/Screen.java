@@ -1,31 +1,29 @@
-package robot;
-
-import robot.Position;
+package arcade;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-public class Grid {
+public class Screen {
 
-    Map<Position, Color> panels = new HashMap<>();
+    Map<Position, TileId> tiles = new HashMap<>();
 
-    public Color get(Position position) {
-        return panels.getOrDefault(position, Color.BLACK);
+    public TileId get(Position position) {
+        return tiles.get(position);
     }
 
-    public void paint(Position position, Color color) {
-        panels.put(position, color);
+    public void draw(Position position, TileId tileId) {
+        tiles.put(position, tileId);
     }
 
-    public int numPainted() {
-        return panels.size();
+    public long numBlocks() {
+        return tiles.values().stream()
+                .filter(TileId.BLOCK::equals)
+                .count();
     }
-
+/*
     public String render() {
-        var whites = panels.keySet().stream()
-                .filter(pos -> panels.get(pos) == Color.WHITE)
+        var whites = tiles.keySet().stream()
+                .filter(pos -> tiles.get(pos) == Color.WHITE)
                 .collect(Collectors.toUnmodifiableList());
         var screen = screen(whites);
         return render(screen);
@@ -50,4 +48,6 @@ public class Grid {
         }
         return builder.toString();
     }
+
+ */
 }

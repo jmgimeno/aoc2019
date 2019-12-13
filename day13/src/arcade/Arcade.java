@@ -1,11 +1,11 @@
-package robot;
+package arcade;
 
 import machine.ConcurrentMachine;
 
 import java.math.BigInteger;
 import java.util.concurrent.*;
 
-public class Robot {
+public class Arcade {
 
     final ExecutorService executorService;
     final BlockingQueue<BigInteger> brainInput;
@@ -13,7 +13,7 @@ public class Robot {
     final CountDownLatch finishSignal;
     final ConcurrentMachine brain;
 
-    public Robot(String program) {
+    public Arcade(String program) {
         executorService = Executors.newSingleThreadExecutor();
         brainInput = new LinkedBlockingQueue<>();
         brainOutput = new LinkedBlockingQueue<>();
@@ -22,17 +22,13 @@ public class Robot {
         executorService.submit(brain);
     }
 
-    public void paintHull(Grid grid) throws InterruptedException {
-        var position = Position.xy(0, 0);
-        var orientation = Orientation.UP;
+    public void play(Screen screen) throws InterruptedException {
         do {
-            var color = grid.get(position);
-            brainInput.put(color == Color.BLACK ? BigInteger.ZERO : BigInteger.ONE);
-            var paintTo = brainOutput.take().intValue() == 0 ? Color.BLACK : Color.WHITE;
-            var turn = brainOutput.take().intValue() == 0 ? Turn.LEFT : Turn.RIGHT;
-            grid.paint(position, paintTo);
-            orientation = orientation.turn(turn);
-            position = position.step(orientation);
+            var x = brainOutput.take().intValue();
+            var y = brainOutput.take().intValue();
+            var tileId = TileId.fromInt(brainOutput.take().intValue());
+            var position = new Position(x, y);
+            screen.draw(position, tileId);
         } while (finishSignal.getCount() != 0);
         executorService.shutdown();
     }

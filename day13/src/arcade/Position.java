@@ -1,4 +1,4 @@
-package robot;
+package arcade;
 
 import java.util.Objects;
 
@@ -13,15 +13,6 @@ public class Position {
     Position(int x, int y) {
         this.x = x;
         this.y = y;
-    }
-
-    public Position step(Orientation direction) {
-        return switch(direction) {
-            case RIGHT -> xy(x+1, y);
-            case DOWN  -> xy(x, y+1);
-            case LEFT  -> xy(x-1, y);
-            case UP    -> xy(x, y-1);
-        };
     }
 
     @Override
