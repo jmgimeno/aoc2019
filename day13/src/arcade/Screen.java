@@ -2,10 +2,13 @@ package arcade;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 public class Screen {
 
     Map<Position, TileId> tiles = new HashMap<>();
+    int score;
 
     public TileId get(Position position) {
         return tiles.get(position);
@@ -20,34 +23,35 @@ public class Screen {
                 .filter(TileId.BLOCK::equals)
                 .count();
     }
-/*
+
+    public void updateScore(int newScore) {
+        score = newScore;
+    }
+
     public String render() {
-        var whites = tiles.keySet().stream()
-                .filter(pos -> tiles.get(pos) == Color.WHITE)
-                .collect(Collectors.toUnmodifiableList());
-        var screen = screen(whites);
+        var screen = screen(tiles.keySet());
         return render(screen);
     }
 
-    private boolean[][] screen(List<Position> whites) {
-        var topMost = whites.stream().mapToInt(pos -> pos.y).min().orElseThrow();
-        var leftMost = whites.stream().mapToInt(pos -> pos.x).min().orElseThrow();
-        var bottomMost = whites.stream().mapToInt(pos -> pos.y).max().orElseThrow();
-        var rightMost = whites.stream().mapToInt(pos -> pos.x).max().orElseThrow();
-        var matrix = new boolean[bottomMost-topMost+1][rightMost-leftMost+1];
-        whites.forEach(position -> matrix[position.y-topMost][position.x-leftMost] = true);
+    private TileId[][] screen(Set<Position> positions) {
+        var topMost = positions.stream().mapToInt(pos -> pos.y).min().orElseThrow();
+        var leftMost = positions.stream().mapToInt(pos -> pos.x).min().orElseThrow();
+        var bottomMost = positions.stream().mapToInt(pos -> pos.y).max().orElseThrow();
+        var rightMost = positions.stream().mapToInt(pos -> pos.x).max().orElseThrow();
+        var matrix = new TileId[bottomMost-topMost+1][rightMost-leftMost+1];
+        positions.forEach(position ->
+                matrix[position.y-topMost][position.x-leftMost] = tiles.get(position));
         return matrix;
     }
 
-    private String render(boolean[][] matrix) {
+    private String render(TileId[][] matrix) {
         var builder = new StringBuilder();
-        for (boolean[] booleans : matrix) {
-            for (boolean aBoolean : booleans)
-                builder.append(aBoolean ? "*" : " ");
+        builder.append(String.format("Score = %d%n", score));
+        for (var tiles : matrix) {
+            for (var tile : tiles)
+                builder.append(Objects.requireNonNullElse(tile, TileId.EMPTY).render());
             builder.append("\n");
         }
         return builder.toString();
     }
-
- */
 }

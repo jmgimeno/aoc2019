@@ -21,6 +21,10 @@ public class ConcurrentMachine implements Runnable {
     BigInteger pc;
     boolean halted;
 
+    public void poke(int address, int value) {
+        memory.setImmediate(BigInteger.valueOf(address), BigInteger.valueOf(value));
+    }
+
     enum Operation {ADD, MUL, INPUT, OUTPUT, JUMP_IF_TRUE, JUMP_IF_FALSE, LESS_THAN, EQUALS, ADJUST, HALT}
 
     enum Mode {POSITION, IMMEDIATE, RELATIVE}

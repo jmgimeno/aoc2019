@@ -15,8 +15,17 @@ public class Day13 {
         System.out.println("part1 = " + screen.numBlocks());
     }
 
+    static void part2() throws IOException, InterruptedException {
+        var program = Files.readString(Paths.get("input.txt")).trim();
+        var arcade = new Arcade(program);
+        var screen = new Screen();
+        arcade.insertCoins();
+        arcade.play(screen);
+    }
+
     public static void main(String[] args) throws IOException, InterruptedException {
-        part1();
+        //part1();
+        part2();
     }
 
 }
