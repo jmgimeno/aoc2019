@@ -16,7 +16,7 @@ public class Arcade {
     final ConcurrentMachine brain;
 
     public Arcade(String program) {
-        executorService = Executors.newSingleThreadExecutor();
+        executorService = Executors.newFixedThreadPool(5);
         brainInput = new LinkedBlockingQueue<>();
         brainOutput = new LinkedBlockingQueue<>();
         finishSignal = new CountDownLatch(1);
@@ -29,11 +29,11 @@ public class Arcade {
             var x = brainOutput.take().intValue();
             var y = brainOutput.take().intValue();
             var info = brainOutput.take().intValue();
-            if (x == -1 && y == 0)
+            if (x == -1 && y == 0) {
                 screen.updateScore(info);
-            else
+                System.out.println(screen.render());
+            } else
                 screen.draw(new Position(x, y), TileId.fromInt(info));
-            System.out.println(screen.render());
         } while (finishSignal.getCount() != 0);
         executorService.shutdown();
     }

@@ -24,8 +24,8 @@ public class Screen {
                 .count();
     }
 
-    public void updateScore(int newScore) {
-        score = newScore;
+    public void updateScore(int points) {
+        score += points;
     }
 
     public String render() {

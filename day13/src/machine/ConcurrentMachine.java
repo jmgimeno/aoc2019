@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -194,7 +195,8 @@ public class ConcurrentMachine implements Runnable {
                     pc = PC_(4);
                 }
                 case INPUT -> {
-                    set(1, qInput.take());
+                    var value = qInput.poll(100, TimeUnit.MILLISECONDS);
+                    set(1, value == null ? BigInteger.ZERO : value);
                     pc = PC_(2);
                 }
                 case OUTPUT -> {
