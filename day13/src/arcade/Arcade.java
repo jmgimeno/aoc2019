@@ -19,10 +19,10 @@ public class Arcade {
         brainOutput = new LinkedBlockingQueue<>();
         finishSignal = new CountDownLatch(1);
         brain = new ConcurrentMachine(program, brainInput, brainOutput, finishSignal);
-        executorService.submit(brain);
     }
 
     public void play(Screen screen) throws InterruptedException {
+        executorService.submit(brain);
         int xBall = -1, xPaddle = -1;
         do {
             var x = brainOutput.take().intValue();
@@ -37,20 +37,15 @@ public class Arcade {
                 if (tileId == TileId.BALL) {
                     xBall = x;
                     System.out.println("xBall = " + xBall);
-                    if (xPaddle != -1) {
-                        var joyStick = Integer.signum(xBall - xPaddle);
-                        System.out.println("joyStick = " + joyStick);
-                        brainInput.put(joyStick);
-                    }
                 } else if (tileId == TileId.HORIZONTAL_PADDLE) {
                     xPaddle = x;
                     System.out.println("xPaddle = " + xPaddle);
-                    if (xBall != -1) {
-                        var joyStick = Integer.signum(xBall - xPaddle);
-                        System.out.println("joyStick = " + joyStick);
-                        brainInput.put(joyStick);
-                    }
                 }
+            }
+            if (xBall != -1 && xPaddle != -1) {
+                var joyStick = Integer.signum(xBall - xPaddle);
+                System.out.println("joyStick = " + joyStick);
+                brainInput.put(joyStick);
             }
         } while (finishSignal.getCount() != 0);
         executorService.shutdown();
