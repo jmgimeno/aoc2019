@@ -29,23 +29,32 @@ public class Arcade {
             var y = brainOutput.take().intValue();
             var info = brainOutput.take().intValue();
             if (x == -1 && y == 0) {
+                System.out.println("Received score");
                 screen.updateScore(info);
                 System.out.println(screen.render());
             } else {
+
                 var tileId = TileId.fromInt(info);
                 screen.draw(new Position(x, y), tileId);
                 if (tileId == TileId.BALL) {
                     xBall = x;
                     System.out.println("xBall = " + xBall);
+                    if (xBall != -1 && xPaddle != -1) {
+                        var joyStick = Integer.signum(xBall - xPaddle);
+                        System.out.println("joyStick = " + joyStick);
+                        brainInput.put(joyStick);
+                    }
                 } else if (tileId == TileId.HORIZONTAL_PADDLE) {
                     xPaddle = x;
                     System.out.println("xPaddle = " + xPaddle);
+                    if (xBall != -1 && xPaddle != -1) {
+                        var joyStick = Integer.signum(xBall - xPaddle);
+                        System.out.println("joyStick = " + joyStick);
+                        brainInput.put(joyStick);
+                    }
+                } else {
+                    System.out.println("Received tile");
                 }
-            }
-            if (xBall != -1 && xPaddle != -1) {
-                var joyStick = Integer.signum(xBall - xPaddle);
-                System.out.println("joyStick = " + joyStick);
-                brainInput.put(joyStick);
             }
         } while (finishSignal.getCount() != 0);
         executorService.shutdown();
