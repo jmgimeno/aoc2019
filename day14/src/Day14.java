@@ -1,0 +1,2 @@
+public class Day14 {
+}
