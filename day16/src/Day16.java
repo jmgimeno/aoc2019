@@ -1,0 +1,2 @@
+public class Day16 {
+}
