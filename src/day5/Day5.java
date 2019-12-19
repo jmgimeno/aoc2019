@@ -130,14 +130,14 @@ public class Day5 {
     }
 
     static void part1() throws IOException {
-        var program = Files.readString(Paths.get("data/day5-day6-day7-day8-day9-day10-day11-day12-day13-day14-day15-day16-day17-input.txt")).trim();
+        var program = Files.readString(Paths.get("data/day5-input.txt")).trim();
         var machine = new Machine(program);
         var output = machine.run(1);
         System.out.println("part1 = " + output);
     }
 
     static void part2() throws IOException {
-        var program = Files.readString(Paths.get("data/day5-day6-day7-day8-day9-day10-day11-day12-day13-day14-day15-day16-day17-input.txt")).trim();
+        var program = Files.readString(Paths.get("data/day5-input.txt")).trim();
         var machine = new Machine(program);
         var output = machine.run(5);
         System.out.println("part2 = " + output);

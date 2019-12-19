@@ -393,7 +393,7 @@ class Robot {
 public class Day11 {
 
     static void part1() throws IOException, InterruptedException {
-        var program = Files.readString(Paths.get("data/day11-day12-day13-day14-day15-day16-day17-input.txt")).trim();
+        var program = Files.readString(Paths.get("data/day11-input.txt")).trim();
         var robot = new Robot(program);
         var grid = new Grid();
         robot.paintHull(grid);
@@ -401,7 +401,7 @@ public class Day11 {
     }
 
     static void part2() throws IOException, InterruptedException {
-        var program = Files.readString(Paths.get("data/day11-day12-day13-day14-day15-day16-day17-input.txt")).trim();
+        var program = Files.readString(Paths.get("data/day11-input.txt")).trim();
         var robot = new Robot(program);
         var grid = new Grid();
         grid.paint(Position.xy(0,0), Color.WHITE);

@@ -137,7 +137,7 @@ public class Day10 {
     }
 
     static void part1() throws IOException {
-        var map = Files.readString(Paths.get("data/day10-day11-day12-day13-day14-day15-day16-day17-input.txt")).trim();
+        var map = Files.readString(Paths.get("data/day10-input.txt")).trim();
         var region = new Region(map);
         var point = region.maxPoint();
         var num = region.maxDetected();
@@ -145,7 +145,7 @@ public class Day10 {
     }
 
     static void part2() throws IOException {
-        var map = Files.readString(Paths.get("data/day10-day11-day12-day13-day14-day15-day16-day17-input.txt")).trim();
+        var map = Files.readString(Paths.get("data/day10-input.txt")).trim();
         var region = new Region(map);
         var laser = region.maxPoint();
         var targets = region.findTargets(laser, 200);

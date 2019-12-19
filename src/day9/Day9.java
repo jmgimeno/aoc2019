@@ -224,7 +224,7 @@ public class Day9 {
     }
 
     static void part1() throws IOException, InterruptedException {
-        var program = Files.readString(Paths.get("data/day9-day10-day11-day12-day13-day14-day15-day16-day17-input.txt")).trim();
+        var program = Files.readString(Paths.get("data/day9-input.txt")).trim();
         var input = new LinkedBlockingQueue<BigInteger>();
         var output = new LinkedBlockingQueue<BigInteger>();
         var counter = new CountDownLatch(1);
@@ -235,7 +235,7 @@ public class Day9 {
     }
 
     static void part2() throws IOException, InterruptedException {
-        var program = Files.readString(Paths.get("data/day9-day10-day11-day12-day13-day14-day15-day16-day17-input.txt")).trim();
+        var program = Files.readString(Paths.get("data/day9-input.txt")).trim();
         var input = new LinkedBlockingQueue<BigInteger>();
         var output = new LinkedBlockingQueue<BigInteger>();
         var counter = new CountDownLatch(1);

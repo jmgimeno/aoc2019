@@ -227,13 +227,13 @@ public class Day7 {
     }
 
     static void part1() throws IOException, ExecutionException, InterruptedException {
-        var program = Files.readString(Paths.get("data/day7-day8-day9-day10-day11-day12-day13-day14-day15-day16-day17-input.txt")).trim();
+        var program = Files.readString(Paths.get("data/day7-input.txt")).trim();
         var part1 = ConcurrentAmplifiers.maxThrust1(program);
         System.out.println("part1 = " + part1);
     }
 
     static void part2() throws IOException, ExecutionException, InterruptedException {
-        var program = Files.readString(Paths.get("data/day7-day8-day9-day10-day11-day12-day13-day14-day15-day16-day17-input.txt")).trim();
+        var program = Files.readString(Paths.get("data/day7-input.txt")).trim();
         var part2 = ConcurrentAmplifiers.maxThrust2(program);
         System.out.println("part2 = " + part2);
     }

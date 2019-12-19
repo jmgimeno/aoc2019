@@ -13,7 +13,7 @@ public class Day1 {
     }
 
     public static void part1() throws IOException {
-        int part1 = Files.lines(Paths.get("data/day1-day5-day6-day7-day8-day9-day10-day11-day12-day13-day14-day15-day16-day17-input.txt"))
+        int part1 = Files.lines(Paths.get("data/day1-input.txt"))
                 .mapToInt(Integer::parseInt)
                 .map(Day1::requiredFuel)
                 .sum();
@@ -32,7 +32,7 @@ public class Day1 {
     }
 
     public static void part2() throws IOException {
-        int part2 = Files.lines(Paths.get("data/day1-day5-day6-day7-day8-day9-day10-day11-day12-day13-day14-day15-day16-day17-input.txt"))
+        int part2 = Files.lines(Paths.get("data/day1-input.txt"))
                 .mapToInt(Integer::parseInt)
                 .flatMap(Day1::totalFuelStream)
                 .sum();

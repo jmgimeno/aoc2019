@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class Day12 {
 
     private static void part1() throws IOException {
-        var moons = Files.lines(Paths.get("data/day12-day13-day14-day15-day16-day17-input.txt"))
+        var moons = Files.lines(Paths.get("data/day12-input.txt"))
                 .map(Vector::parseVector)
                 .map(Moon::new)
                 .collect(Collectors.toUnmodifiableList());

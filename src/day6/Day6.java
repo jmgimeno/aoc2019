@@ -25,7 +25,7 @@ public class Day6 {
     }
 
     static void part1() throws IOException {
-        System.out.println("part1 = " + totalOrbits("data/day6-day7-day8-day9-day10-day11-day12-day13-day14-day15-day16-day17-input.txt"));
+        System.out.println("part1 = " + totalOrbits("data/day6-input.txt"));
     }
 
     public static long totalTransfers(String fileName) throws IOException {
@@ -51,7 +51,7 @@ public class Day6 {
     }
 
     static void part2() throws IOException {
-        System.out.println("part2 = " + totalTransfers("data/day6-day7-day8-day9-day10-day11-day12-day13-day14-day15-day16-day17-input.txt"));
+        System.out.println("part2 = " + totalTransfers("data/day6-input.txt"));
     }
 
     public static void main(String[] args) throws IOException {

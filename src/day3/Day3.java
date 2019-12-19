@@ -169,7 +169,7 @@ public class Day3 {
     }
 
     static void part1() {
-        try (var file = Files.newBufferedReader(Paths.get("data/day3-day5-day6-day7-day8-day9-day10-day11-day12-day13-day14-day15-day16-day17-input.txt"))) {
+        try (var file = Files.newBufferedReader(Paths.get("data/day3-input.txt"))) {
             var line1 = file.readLine();
             var line2 = file.readLine();
             var part1 = part1(line1, line2);
@@ -205,7 +205,7 @@ public class Day3 {
     }
 
     static void part2() {
-        try (var file = Files.newBufferedReader(Paths.get("data/day3-day5-day6-day7-day8-day9-day10-day11-day12-day13-day14-day15-day16-day17-input.txt"))) {
+        try (var file = Files.newBufferedReader(Paths.get("data/day3-input.txt"))) {
             var line1 = file.readLine();
             var line2 = file.readLine();
             var part2 = part2(line1, line2);

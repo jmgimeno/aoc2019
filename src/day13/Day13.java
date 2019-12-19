@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 public class Day13 {
 
     static void part1() throws IOException, InterruptedException {
-        var program = Files.readString(Paths.get("data/day13-day14-day15-day16-day17-input.txt")).trim();
+        var program = Files.readString(Paths.get("data/day13-input.txt")).trim();
         var arcade = new Arcade(program);
         var screen = new Screen();
         arcade.play(screen);
@@ -18,7 +18,7 @@ public class Day13 {
     }
 
     static void part2() throws IOException, InterruptedException {
-        var program = Files.readString(Paths.get("data/day13-day14-day15-day16-day17-input.txt")).trim();
+        var program = Files.readString(Paths.get("data/day13-input.txt")).trim();
         var arcade = new Arcade(program);
         var screen = new Screen();
         arcade.insertCoins();

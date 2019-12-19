@@ -102,7 +102,7 @@ public class Day8 {
     }
 
     static void part1() throws IOException {
-        var imageString = Files.readString(Paths.get("data/day8-day9-day10-day11-day12-day13-day14-day15-day16-day17-input.txt")).trim();
+        var imageString = Files.readString(Paths.get("data/day8-input.txt")).trim();
         var image = new Image(WIDE, TALL, imageString);
         var zeroesLayer = image.layerOfMinZeros();
         var ones = image.countValue(zeroesLayer, 1);
@@ -111,7 +111,7 @@ public class Day8 {
     }
 
     static void part2() throws IOException {
-        var imageString = Files.readString(Paths.get("data/day8-day9-day10-day11-day12-day13-day14-day15-day16-day17-input.txt")).trim();
+        var imageString = Files.readString(Paths.get("data/day8-input.txt")).trim();
         var image = new Image(WIDE, TALL, imageString);
         var decoded = image.decode();
         System.out.println("part2");
