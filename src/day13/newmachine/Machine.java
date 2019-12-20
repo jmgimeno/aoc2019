@@ -1,24 +1,21 @@
 package day13.newmachine;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class Machine implements Runnable {
+public class Machine {
 
     final Memory memory;
-    final BlockingQueue<Long> qInput;
-    final BlockingQueue<Long> qOutput;
-    final CountDownLatch endSignal;
 
+    Long input;
+    List<Long> output;
     long pc;
     boolean halted;
+    boolean waiting;
 
     public String dumpLowMemory() {
         return memory.dumpLowMemory();
@@ -48,41 +45,28 @@ public class Machine implements Runnable {
     );
 
     public Machine(
-            String program,
-            BlockingQueue<Long> qInput,
-            BlockingQueue<Long> qOutput) {
-
-        this(program, qInput, qOutput, null);
-    }
-
-    public Machine(
-            String program,
-            BlockingQueue<Long> qInput,
-            BlockingQueue<Long> qOutput,
-            CountDownLatch endSignal) {
+            String program) {
 
         this.memory = new Memory(
                 Stream.of(program.split(","))
                         .map(Long::parseLong)
                         .collect(Collectors.toCollection(ArrayList::new)));
-        this.qInput = qInput;
-        this.qOutput = qOutput;
-        this.endSignal = endSignal;
+        this.pc = 0L;
     }
 
-    @Override
-    public void run() {
-        try {
-            pc = 0L;
-            Instruction instruction = new Instruction((int) memory.getImmediate(pc));
-            while (!halted) {
-                instruction.execute();
-                instruction = new Instruction((int) memory.getImmediate(pc));
-            }
-            if (endSignal != null) endSignal.countDown();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+    public List<Long> run() {
+        output = new ArrayList<>();
+        Instruction instruction = new Instruction((int) memory.getImmediate(pc));
+        while (!halted && !waiting) {
+            instruction.execute();
+            instruction = new Instruction((int) memory.getImmediate(pc));
         }
+        return output;
+    }
+
+    public void addInput(long value) {
+        input = value;
+        waiting = false;
     }
 
     class Instruction {
@@ -90,10 +74,10 @@ public class Machine implements Runnable {
         final Operation operation;
         final List<Mode> accessors;
 
-        Instruction(int opcode) {
-            operation = operationDecoder.get(opcode % 100);
+        Instruction(int opCode) {
+            operation = operationDecoder.get(opCode % 100);
             accessors = IntStream
-                    .iterate(opcode / 100, i -> i / 10)
+                    .iterate(opCode / 100, i -> i / 10)
                     .mapToObj(i -> modeDecoder.get(i % 10))
                     .limit(3)
                     .collect(Collectors.toUnmodifiableList());
@@ -127,7 +111,7 @@ public class Machine implements Runnable {
             return pc + n;
         }
 
-        private void execute() throws InterruptedException {
+        private void execute() {
             switch (operation) {
                 case ADD -> {
                     set(3, get(1) + get(2));
@@ -138,11 +122,17 @@ public class Machine implements Runnable {
                     pc = PC_(4);
                 }
                 case INPUT -> {
-                    set(1, qInput.take());
-                    pc = PC_(2);
+                    if (!waiting && input == null) {
+                        waiting = true;
+                    } else {
+                        waiting = false;
+                        set(1, input);
+                        input = null;
+                        pc = PC_(2);
+                    }
                 }
                 case OUTPUT -> {
-                    qOutput.put(get(1));
+                    output.add(get(1));
                     pc = PC_(2);
                 }
                 case JUMP_IF_TRUE -> {
@@ -174,6 +164,14 @@ public class Machine implements Runnable {
                 case HALT -> halted = true;
             }
         }
+    }
+
+    public boolean isHalted() {
+        return halted;
+    }
+
+    public boolean isWaiting() {
+        return waiting;
     }
 }
 
