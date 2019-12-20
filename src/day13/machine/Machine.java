@@ -1,4 +1,4 @@
-package day13.newmachine;
+package day13.machine;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +67,18 @@ public class Machine {
     public void addInput(long value) {
         input = value;
         waiting = false;
+    }
+
+    public void poke(int address, int value) {
+        memory.setImmediate(address, value);
+    }
+
+    public boolean isHalted() {
+        return halted;
+    }
+
+    public boolean isWaiting() {
+        return waiting;
     }
 
     class Instruction {
@@ -164,14 +176,6 @@ public class Machine {
                 case HALT -> halted = true;
             }
         }
-    }
-
-    public boolean isHalted() {
-        return halted;
-    }
-
-    public boolean isWaiting() {
-        return waiting;
     }
 }
 

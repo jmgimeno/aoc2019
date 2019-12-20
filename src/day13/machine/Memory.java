@@ -1,4 +1,4 @@
-package day13.newmachine;
+package day13.machine;
 
 import java.util.HashMap;
 import java.util.List;

@@ -25,7 +25,7 @@ public class Screen {
     }
 
     public void updateScore(int points) {
-        score += points;
+        this.score = points;
     }
 
     public String render() {

@@ -1,6 +1,6 @@
 package day13;
 
-import day13.newmachine.Machine;
+import day13.machine.Machine;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
