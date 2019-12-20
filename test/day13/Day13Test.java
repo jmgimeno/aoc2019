@@ -17,8 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class Day13Test {
 
     static String executeAsDay2(String program) {
-        var input = new LinkedBlockingQueue<BigInteger>();
-        var output = new LinkedBlockingQueue<BigInteger>();
+        var input = new LinkedBlockingQueue<Long>();
+        var output = new LinkedBlockingQueue<Long>();
         var endSignaler = new CountDownLatch(1);
         var machine = new Machine(program, input, output, endSignaler);
         machine.run();
@@ -33,36 +33,35 @@ class Day13Test {
         assertEquals("30,1,1,4,2,5,6,0,99", executeAsDay2("1,1,1,4,99,5,6,0,99"));
     }
 
-    static List<Integer> executeAsDay5(String program, int value) throws InterruptedException {
-        var input = new LinkedBlockingQueue<BigInteger>();
-        var output = new LinkedBlockingQueue<BigInteger>();
+    static List<Long> executeAsDay5(String program, long value) throws InterruptedException {
+        var input = new LinkedBlockingQueue<Long>();
+        var output = new LinkedBlockingQueue<Long>();
         var endSignaler = new CountDownLatch(1);
-        input.add(BigInteger.valueOf(value));
+        input.add(value);
         var machine = new Machine(program, input, output, endSignaler);
         machine.run();
         endSignaler.await();
         return output.stream()
-                .map(BigInteger::intValue)
                 .collect(Collectors.toUnmodifiableList());
     }
 
     @Test
     void day5part1() throws IOException, InterruptedException {
         var program = Files.readString(Paths.get("data/day5-input.txt")).trim();
-        assertEquals(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0, 12234644), executeAsDay5(program, 1));
+        assertEquals(List.of(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 12234644L), executeAsDay5(program, 1L));
     }
 
     @Test
     void day5Part2() throws IOException, InterruptedException {
         var program = Files.readString(Paths.get("data/day5-input.txt")).trim();
-        assertEquals(List.of(3508186), executeAsDay5(program, 5));
+        assertEquals(List.of(3508186L), executeAsDay5(program, 5L));
     }
 
     @Test
     void day9Example1() {
         var program = "109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99";
-        var input = new LinkedBlockingQueue<BigInteger>();
-        var output = new LinkedBlockingQueue<BigInteger>();
+        var input = new LinkedBlockingQueue<Long>();
+        var output = new LinkedBlockingQueue<Long>();
         var counter = new CountDownLatch(1);
         var machine = new Machine(program, input, output, counter);
         machine.run();
@@ -73,8 +72,8 @@ class Day13Test {
     @Test
     void day9Example2() {
         var program = "1102,34915192,34915192,7,4,7,99,0";
-        var input = new LinkedBlockingQueue<BigInteger>();
-        var output = new LinkedBlockingQueue<BigInteger>();
+        var input = new LinkedBlockingQueue<Long>();
+        var output = new LinkedBlockingQueue<Long>();
         var counter = new CountDownLatch(1);
         var machine = new Machine(program, input, output, counter);
         machine.run();
@@ -84,8 +83,8 @@ class Day13Test {
     @Test
     void day9Example3() {
         var program = "104,1125899906842624,99";
-        var input = new LinkedBlockingQueue<BigInteger>();
-        var output = new LinkedBlockingQueue<BigInteger>();
+        var input = new LinkedBlockingQueue<Long>();
+        var output = new LinkedBlockingQueue<Long>();
         var counter = new CountDownLatch(1);
         var machine = new Machine(program, input, output, counter);
         machine.run();

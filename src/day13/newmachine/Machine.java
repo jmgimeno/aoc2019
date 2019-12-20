@@ -13,11 +13,11 @@ import java.util.stream.Stream;
 public class Machine implements Runnable {
 
     final Memory memory;
-    final BlockingQueue<BigInteger> qInput;
-    final BlockingQueue<BigInteger> qOutput;
+    final BlockingQueue<Long> qInput;
+    final BlockingQueue<Long> qOutput;
     final CountDownLatch endSignal;
 
-    BigInteger pc;
+    long pc;
     boolean halted;
 
     public String dumpLowMemory() {
@@ -49,21 +49,21 @@ public class Machine implements Runnable {
 
     public Machine(
             String program,
-            BlockingQueue<BigInteger> qInput,
-            BlockingQueue<BigInteger> qOutput) {
+            BlockingQueue<Long> qInput,
+            BlockingQueue<Long> qOutput) {
 
         this(program, qInput, qOutput, null);
     }
 
     public Machine(
             String program,
-            BlockingQueue<BigInteger> qInput,
-            BlockingQueue<BigInteger> qOutput,
+            BlockingQueue<Long> qInput,
+            BlockingQueue<Long> qOutput,
             CountDownLatch endSignal) {
 
         this.memory = new Memory(
                 Stream.of(program.split(","))
-                        .map(BigInteger::new)
+                        .map(Long::parseLong)
                         .collect(Collectors.toCollection(ArrayList::new)));
         this.qInput = qInput;
         this.qOutput = qOutput;
@@ -73,11 +73,11 @@ public class Machine implements Runnable {
     @Override
     public void run() {
         try {
-            pc = BigInteger.ZERO;
-            Instruction instruction = new Instruction(memory.getImmediate(pc).intValue());
+            pc = 0L;
+            Instruction instruction = new Instruction((int) memory.getImmediate(pc));
             while (!halted) {
                 instruction.execute();
-                instruction = new Instruction(memory.getImmediate(pc).intValue());
+                instruction = new Instruction((int) memory.getImmediate(pc));
             }
             if (endSignal != null) endSignal.countDown();
         } catch (InterruptedException e) {
@@ -107,7 +107,7 @@ public class Machine implements Runnable {
                     '}';
         }
 
-        BigInteger get(int i) {
+        long get(int i) {
             return switch (accessors.get(i - 1)) {
                 case POSITION -> memory.getPosition(PC_(i));
                 case IMMEDIATE -> memory.getImmediate(PC_(i));
@@ -115,7 +115,7 @@ public class Machine implements Runnable {
             };
         }
 
-        void set(int i, BigInteger value) {
+        void set(int i, long value) {
             switch (accessors.get(i - 1)) {
                 case POSITION -> memory.setPosition(PC_(i), value);
                 case IMMEDIATE -> memory.setImmediate(PC_(i), value);
@@ -123,18 +123,18 @@ public class Machine implements Runnable {
             }
         }
 
-        BigInteger PC_(int n) {
-            return BigInteger.valueOf(n).add(pc);
+        long PC_(int n) {
+            return pc + n;
         }
 
         private void execute() throws InterruptedException {
             switch (operation) {
                 case ADD -> {
-                    set(3, get(1).add(get(2)));
+                    set(3, get(1) + get(2));
                     pc = PC_(4);
                 }
                 case MUL -> {
-                    set(3, get(1).multiply(get(2)));
+                    set(3, get(1) * get(2));
                     pc = PC_(4);
                 }
                 case INPUT -> {
@@ -146,25 +146,25 @@ public class Machine implements Runnable {
                     pc = PC_(2);
                 }
                 case JUMP_IF_TRUE -> {
-                    if (!get(1).equals(BigInteger.ZERO)) {
+                    if (get(1) != 0L) {
                         pc = get(2);
                     } else {
                         pc = PC_(3);
                     }
                 }
                 case JUMP_IF_FALSE -> {
-                    if (get(1).equals(BigInteger.ZERO)) {
+                    if (get(1) == 0L) {
                         pc = get(2);
                     } else {
                         pc = PC_(3);
                     }
                 }
                 case LESS_THAN -> {
-                    set(3, get(1).compareTo(get(2)) < 0 ? BigInteger.ONE : BigInteger.ZERO);
+                    set(3, get(1) < get(2) ? 1L : 0L);
                     pc = PC_(4);
                 }
                 case EQUALS -> {
-                    set(3, get(1).equals(get(2)) ? BigInteger.ONE : BigInteger.ZERO);
+                    set(3, get(1) == get(2) ? 1L : 0L);
                     pc = PC_(4);
                 }
                 case ADJUST -> {
