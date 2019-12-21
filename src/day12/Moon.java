@@ -26,7 +26,7 @@ public class Moon<V extends Vector<V>> {
                 .reduce(position.zero(), Vector::add)
                 .add(velocity);
         var newPosition = position.add(newVelocity);
-        return new Moon<V>(newPosition, newVelocity);
+        return new Moon<>(newPosition, newVelocity);
     }
 
     public boolean isStopped() {
