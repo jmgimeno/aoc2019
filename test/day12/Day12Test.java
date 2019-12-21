@@ -10,13 +10,15 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class Day12Test {
+
     @Test
     void part2Ex1() throws IOException {
         var moons = Files.lines(Paths.get("data/day12-test.txt"))
-                .map(Vector::parseVector)
+                .map(Vector3::parseVector)
                 .map(Moon::new)
                 .collect(Collectors.toUnmodifiableList());
         var steps = Day12.stepsToRepetition(moons);
         assertEquals(2772L, steps);
     }
+
 }

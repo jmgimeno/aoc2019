@@ -3,26 +3,34 @@ package day12;
 import java.util.List;
 import java.util.Objects;
 
-public class Moon {
-    final Vector position, velocity;
+public class Moon<V extends Vector<V>> {
+    final V position, velocity;
 
-    public Moon(Vector position) {
+    public Moon(V position) {
         this.position = position;
-        this.velocity = new Vector();
+        this.velocity = position.zero();
     }
 
-    public Moon(Vector position, Vector velocity) {
+    public Moon(V position, V velocity) {
         this.position = position;
         this.velocity = velocity;
     }
 
-    public Moon step(List<Moon> others) {
-        var newVelocity = others.stream()
+    public V getPosition() {
+        return position;
+    }
+
+    public Moon<V> step(List<Moon<V>> others) {
+        V newVelocity = others.stream()
                 .map(other -> position.diff(other.position))
-                .reduce(new Vector(), Vector::add)
+                .reduce(position.zero(), Vector::add)
                 .add(velocity);
         var newPosition = position.add(newVelocity);
-        return new Moon(newPosition, newVelocity);
+        return new Moon<V>(newPosition, newVelocity);
+    }
+
+    public boolean isStopped() {
+        return velocity.isZero();
     }
 
     public int potentialEnergy() {
@@ -41,7 +49,7 @@ public class Moon {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Moon moon = (Moon) o;
+        Moon<?> moon = (Moon<?>) o;
         return position.equals(moon.position) &&
                 velocity.equals(moon.velocity);
     }

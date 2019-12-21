@@ -4,25 +4,40 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class Cluster {
-    final List<Moon> moons;
+public class Cluster<V extends Vector<V>> {
+    final List<Moon<V>> moons;
 
-    public Cluster(List<Moon> moons) {
+    public Cluster(List<Moon<V>> moons) {
         this.moons = moons;
     }
 
-    public Cluster step() {
+    public Cluster<V> step() {
         var newMoons = moons.stream()
                 .map(moon -> moon.step(moons))
                 .collect(Collectors.toUnmodifiableList());
-        return new Cluster(newMoons);
+        return new Cluster<>(newMoons);
     }
 
-    public Cluster step(int n) {
+    public Cluster<V> step(int n) {
         var cluster = this;
         for (int i = 1; i <= n; i++)
             cluster = cluster.step();
         return cluster;
+    }
+
+    public long stepsToZeroVelocity() {
+        var steps = 0L;
+        var cluster = this;
+        do {
+            cluster = cluster.step();
+            steps += 1L;
+        } while (!cluster.allStopped());
+        return steps;
+    }
+
+    private boolean allStopped() {
+        return moons.stream()
+                .allMatch(Moon::isStopped);
     }
 
     public int totalEnergy() {
@@ -35,7 +50,7 @@ public class Cluster {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Cluster cluster = (Cluster) o;
+        Cluster<?> cluster = (Cluster<?>) o;
         return moons.equals(cluster.moons);
     }
 

@@ -178,8 +178,6 @@ What is the total energy in the system after simulating the moons given in your 
 
 Your puzzle answer was 13399.
 
-The first half of this puzzle is complete! It provides one gold star: *
-
 --- Part Two ---
 All this drifting around in space makes you wonder about the nature of the universe. Does history really repeat itself? You're curious whether the moons will ever return to a previous state.
 
@@ -220,4 +218,10 @@ This set of initial positions takes 4686774924 steps before it repeats a previou
 
 How many steps does it take to reach the first state that exactly matches a previous state?
 
-Although it hasn't changed, you can still get your puzzle input.
+Your puzzle answer was 312992287193064.
+
+Both parts of this puzzle are complete! They provide two gold stars: **
+
+At this point, you should return to your Advent calendar and try another puzzle.
+
+If you still want to see it, you can get your puzzle input.

@@ -3,42 +3,68 @@ package day12;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Day12 {
 
     private static void part1() throws IOException {
         var moons = Files.lines(Paths.get("data/day12-input.txt"))
-                .map(Vector::parseVector)
+                .map(Vector3::parseVector)
                 .map(Moon::new)
                 .collect(Collectors.toUnmodifiableList());
-        Cluster cluster = new Cluster(moons);
+        Cluster<Vector3> cluster = new Cluster<>(moons);
         cluster = cluster.step(1000);
         System.out.println("part1 = " + cluster.totalEnergy());
     }
 
     private static void part2() throws IOException {
-        var moons = Files.lines(Paths.get("data/day12-test.txt"))
-                .map(Vector::parseVector)
+        var moons = Files.lines(Paths.get("data/day12-input.txt"))
+                .map(Vector3::parseVector)
                 .map(Moon::new)
                 .collect(Collectors.toUnmodifiableList());
-        var steps = stepsToRepetition(moons);
-        System.out.println("part2 = " + steps);
+        var part2 = stepsToRepetition(moons);
+        System.out.println("part2 = " + part2);
     }
 
-    static long stepsToRepetition(List<Moon> moons) {
-        var cluster = new Cluster(moons);
-        var history = new HashSet<Cluster>();
-        var steps = 0L;
-        history.add(cluster);
-        while (true) {
-            steps += 1L;
-            cluster = cluster.step();
-            if (!history.add(cluster))
-                return steps;
+    private static List<Moon<Vector1>> project(List<Moon<Vector3>> moons2, Function<Vector3, Vector1> projector) {
+        return moons2.stream()
+                .map(Moon::getPosition)
+                .map(projector)
+                .map(Moon::new)
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    static long stepsToRepetition(List<Moon<Vector3>> moons) {
+        var xs = project(moons, Vector3::getX);
+        var clusterX = new Cluster<>(xs);
+        var stepsX = clusterX.stepsToZeroVelocity();
+        var ys = project(moons, Vector3::getY);
+        var clusterY = new Cluster<>(ys);
+        var stepsY = clusterY.stepsToZeroVelocity();
+        var zs = project(moons, Vector3::getZ);
+        var clusterZ = new Cluster<>(zs);
+        var stepsZ = clusterZ.stepsToZeroVelocity();
+        return 2 * lcm(stepsX, stepsY, stepsZ);
+    }
+
+    static long lcm(long a, long b, long c) {
+        return lcm(a, lcm(b, c));
+    }
+
+    static long lcm(long a, long b) {
+        return (a * b) / gcd(a, b);
+    }
+
+    static long gcd(long a, long b) {
+        long r = a % b;
+        while (r != 0L) {
+            a = b;
+            b = r;
+            r = a % b;
         }
+        return b;
     }
 
     public static void main(String[] args) throws IOException {
