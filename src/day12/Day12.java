@@ -10,22 +10,23 @@ import java.util.stream.Collectors;
 public class Day12 {
 
     private static void part1() throws IOException {
-        var moons = Files.lines(Paths.get("data/day12-input.txt"))
-                .map(Vector3::parseVector)
-                .map(Moon::new)
-                .collect(Collectors.toUnmodifiableList());
+        var moons = readMoons("data/day12-input.txt");
         Cluster<Vector3> cluster = new Cluster<>(moons);
         cluster = cluster.step(1000);
         System.out.println("part1 = " + cluster.totalEnergy());
     }
 
     private static void part2() throws IOException {
-        var moons = Files.lines(Paths.get("data/day12-input.txt"))
+        var moons = readMoons("data/day12-input.txt");
+        var part2 = stepsToRepetition(moons);
+        System.out.println("part2 = " + part2);
+    }
+
+    static List<Moon<Vector3>> readMoons(String fileName) throws IOException {
+        return Files.lines(Paths.get(fileName))
                 .map(Vector3::parseVector)
                 .map(Moon::new)
                 .collect(Collectors.toUnmodifiableList());
-        var part2 = stepsToRepetition(moons);
-        System.out.println("part2 = " + part2);
     }
 
     private static List<Moon<Vector1>> project(List<Moon<Vector3>> moons2, Function<Vector3, Vector1> projector) {
