@@ -2,7 +2,6 @@ package day22;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.IntStream;
 
 public class Deck {
@@ -17,7 +16,7 @@ public class Deck {
     }
 
     public Deck(int[] cards) {
-        this.cards = Arrays.copyOf(cards, cards.length);
+        this.cards = cards;
     }
 
     @Override
@@ -41,7 +40,6 @@ public class Deck {
     }
 
     public Deck intoNewStack() {
-        System.out.println("new stack");
         var inverted = IntStream.range(0, cards.length)
                 .map(i -> cards[cards.length - 1 - i])
                 .toArray();
@@ -49,8 +47,8 @@ public class Deck {
     }
 
     public Deck cutNCards(int n) {
-        System.out.println("cut " + n);
         var  nn = (n >= 0) ? n : n + cards.length;
+        assert nn > 0;
         var cut = IntStream.range(0, cards.length)
                 .map(i -> cards[(i + nn) % cards.length])
                 .toArray();
@@ -58,17 +56,19 @@ public class Deck {
     }
 
     public Deck withIncrement(int n) {
-        System.out.println("increment " + n);
         var newCards = new int[cards.length];
         var j = 0;
-        for (int i = 0; i < cards.length; i++) {
-            newCards[j] = cards[i];
+        for (int card : cards) {
+            newCards[j] = card;
             j = (j + n) % newCards.length;
         }
         return new Deck(newCards);
     }
 
-    public int cardAt(int i) {
-        return cards[i];
+    public int positionOf(int n) {
+        return IntStream.range(0, cards.length)
+                .filter(i -> cards[i] == n)
+                .findFirst()
+                .orElseThrow();
     }
 }

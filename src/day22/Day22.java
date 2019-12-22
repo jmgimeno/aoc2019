@@ -9,7 +9,7 @@ public class Day22 {
         var shuffle = Parser.parse(Paths.get("data/day22-input.txt"));
         var deck = new Deck(10007);
         var shuffledDeck = shuffle.apply(deck);
-        var part1 = shuffledDeck.cardAt(2019);
+        var part1 = shuffledDeck.positionOf(2019);
         System.out.println("part1 = " + part1);
     }
 
