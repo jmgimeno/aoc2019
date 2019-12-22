@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -83,7 +84,24 @@ class Day22Test {
         var shuffle = Parser.parse(Paths.get("data/day22-input.txt"));
         var deck = new Deck(10007L);
         var shuffledDeck = shuffle.apply(deck);
-        //assertEquals(7860L, shuffledDeck.toList().get(2019));
         assertEquals(7860L, shuffledDeck.positionOf(2019L));
+    }
+
+    @Test
+    void repeat1() {
+        Function<Deck, Deck> shuffle = Deck::intoNewStack;
+        var deck = new Deck(119315717514047L);
+        var repeatedShuffle = Deck.repeat(shuffle, 10000L);
+        var shuffledDeck = repeatedShuffle.apply(deck);
+        assertEquals(2020L, shuffledDeck.cardAt(2020L));
+    }
+
+    @Test
+    void repeat2() {
+        Function<Deck, Deck> shuffle = Deck::intoNewStack;
+        var deck = new Deck(119315717514047L);
+        var repeatedShuffle = Deck.repeat(shuffle, 10001L);
+        var shuffledDeck = repeatedShuffle.apply(deck);
+        assertEquals(119315717514047L - 1L - 2020L, shuffledDeck.cardAt(2020L));
     }
 }

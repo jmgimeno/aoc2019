@@ -16,10 +16,14 @@ public class Day22 {
     private static void part2() throws IOException {
         var shuffle = Parser.parse(Paths.get("data/day22-input.txt"));
         var deck = new Deck(119315717514047L);
-        var shuffledDeck = shuffle.apply(deck);
-        var part2 = shuffledDeck.cardAt(2020);
+        var repeatedShuffle = Deck.repeat(shuffle, 101741582076661L);
+        System.out.println("repeatedShuffle = " + repeatedShuffle);
+        var shuffledDeck = repeatedShuffle.apply(deck);
+        System.out.println("shuffledDeck = " + shuffledDeck);
+        var part2 = shuffledDeck.cardAt(2020L);
         System.out.println("part2 = " + part2);
     }
+
     public static void main(String[] args) throws IOException {
         part1();
         part2();
