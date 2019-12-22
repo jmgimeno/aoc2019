@@ -1,74 +1,64 @@
 package day22;
 
-import java.util.Arrays;
+import javax.swing.plaf.basic.BasicListUI;
+import java.math.BigInteger;
 import java.util.List;
-import java.util.stream.IntStream;
+import java.util.function.LongUnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 public class Deck {
-    private final int[] cards;
+    private final long size;
+    private final LongUnaryOperator cards;
 
-    public Deck(int size) {
-        this.cards = IntStream.range(0, size).toArray();
+    public Deck(long size) {
+        this.size = size;
+        this.cards = LongUnaryOperator.identity();
     }
 
-    public Deck(List<Integer> cards) {
-        this.cards = cards.stream().mapToInt(Integer::intValue).toArray();
-    }
-
-    public Deck(int[] cards) {
+    public Deck(long size, LongUnaryOperator cards) {
+        this.size = size;
         this.cards = cards;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Deck deck = (Deck) o;
-        return Arrays.equals(cards, deck.cards);
-    }
-
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(cards);
-    }
-
-    @Override
-    public String toString() {
-        return "Deck{" +
-                "cards=" + Arrays.toString(cards) +
-                '}';
-    }
-
     public Deck intoNewStack() {
-        var inverted = IntStream.range(0, cards.length)
-                .map(i -> cards[cards.length - 1 - i])
-                .toArray();
-        return new Deck(inverted);
+        LongUnaryOperator inverted = i -> cards.applyAsLong(size - 1 - i);
+        return new Deck(size, inverted);
     }
 
-    public Deck cutNCards(int n) {
-        var  nn = (n >= 0) ? n : n + cards.length;
-        assert nn > 0;
-        var cut = IntStream.range(0, cards.length)
-                .map(i -> cards[(i + nn) % cards.length])
-                .toArray();
-        return new Deck(cut);
+    public Deck cutNCards(long n) {
+        var nn = (n >= 0L) ? n : n + size;
+        LongUnaryOperator cut = i -> cards.applyAsLong((i + nn) % size);
+        return new Deck(size, cut);
     }
 
-    public Deck withIncrement(int n) {
-        var newCards = new int[cards.length];
-        var j = 0;
-        for (int card : cards) {
-            newCards[j] = card;
-            j = (j + n) % newCards.length;
-        }
-        return new Deck(newCards);
+    public Deck withIncrement(long n) {
+        var bigSize = BigInteger.valueOf(size);
+        var bigN = BigInteger.valueOf(n);
+        var invN = bigN.modInverse(bigSize);
+        LongUnaryOperator withIncrement = i -> {
+            var bigI = BigInteger.valueOf(i);
+            var bigInvI = invN.multiply(bigI).mod(bigSize);
+            return cards.applyAsLong(bigInvI.longValue());
+        };
+        return new Deck(size, withIncrement);
     }
 
-    public int positionOf(int n) {
-        return IntStream.range(0, cards.length)
-                .filter(i -> cards[i] == n)
+    public long positionOf(long n) {
+        System.out.println(toList());
+        return LongStream.range(0, size)
+                .filter(i -> cards.applyAsLong(i) == n)
                 .findFirst()
                 .orElseThrow();
+    }
+
+    public long cardAt(long i) {
+        return cards.applyAsLong(i);
+    }
+
+    public List<Long> toList() {
+        return LongStream.range(0, size)
+                .mapToObj(cards::applyAsLong)
+                .collect(Collectors.toUnmodifiableList());
     }
 }
