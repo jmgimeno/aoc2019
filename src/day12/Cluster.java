@@ -3,6 +3,9 @@ package day12;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.function.Predicate.not;
 
 public class Cluster<V extends Vector<V>> {
     final List<Moon<V>> moons;
@@ -19,20 +22,18 @@ public class Cluster<V extends Vector<V>> {
     }
 
     public Cluster<V> step(int n) {
-        var cluster = this;
-        for (int i = 1; i <= n; i++)
-            cluster = cluster.step();
-        return cluster;
+        return Stream.iterate(this, Cluster::step)
+                .skip(n)
+                .findFirst()
+                .orElseThrow();
     }
 
     public long stepsToZeroVelocity() {
-        var steps = 0L;
-        var cluster = this;
-        do {
-            cluster = cluster.step();
-            steps += 1L;
-        } while (!cluster.allStopped());
-        return steps;
+        return Stream.iterate(
+                    step(),
+                    not(Cluster::allStopped),
+                    Cluster::step)
+                .count() + 1;
     }
 
     private boolean allStopped() {
