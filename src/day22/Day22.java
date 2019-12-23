@@ -6,21 +6,15 @@ import java.nio.file.Paths;
 public class Day22 {
 
     private static void part1() throws IOException {
-        var shuffle = Parser.parse(Paths.get("data/day22-input.txt"));
-        var deck = new Deck(10007L);
-        var shuffledDeck = shuffle.apply(deck);
-        var part1 = shuffledDeck.positionOf(2019);
+        var deck = Parser.parse(Paths.get("data/day22-input.txt"), 10007L);
+        var part1 = deck.direct(2019);
         System.out.println("part1 = " + part1);
     }
 
     private static void part2() throws IOException {
-        var shuffle = Parser.parse(Paths.get("data/day22-input.txt"));
-        var deck = new Deck(119315717514047L);
-        var repeatedShuffle = Deck.repeat(shuffle, 101741582076661L);
-        System.out.println("repeatedShuffle = " + repeatedShuffle);
-        var shuffledDeck = repeatedShuffle.apply(deck);
-        System.out.println("shuffledDeck = " + shuffledDeck);
-        var part2 = shuffledDeck.cardAt(2020L);
+        var deck = Parser.parse(Paths.get("data/day22-input.txt"), 119315717514047L);
+        var repeatedShuffle = Deck.repeat(deck, 101741582076661L);
+        var part2 = repeatedShuffle.inverse(2020L);
         System.out.println("part2 = " + part2);
     }
 
