@@ -67,13 +67,4 @@ public class Reaction {
         var right = items.remove(items.size() - 1);
         return new Reaction(right, items);
     }
-
-    @Override
-    public String toString() {
-        return "Reaction{" +
-                "outputName='" + outputName + '\'' +
-                ", outputQuantity=" + outputQuantity +
-                ", inputs=" + inputs +
-                '}';
-    }
 }

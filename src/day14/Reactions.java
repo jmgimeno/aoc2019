@@ -30,19 +30,6 @@ public class Reactions {
             this.products = products;
         }
 
-        public boolean isFinal(String inputName) {
-            return this.products.keySet().stream()
-                    .allMatch(inputName::equals);
-        }
-
-        public List<State> applyReactions(List<Reaction> reactions) {
-            return reactions.stream()
-                    .map(this::applyReaction)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .collect(Collectors.toUnmodifiableList());
-        }
-
         private Optional<State> applyReaction(Reaction reaction) {
             String outputName = reaction.getOutputName();
             if (!products.containsKey(outputName)) {
@@ -64,47 +51,51 @@ public class Reactions {
             return new State(newState);
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            State state = (State) o;
-            return products.equals(state.products);
+        public int get(String name) {
+            return products.getOrDefault(name, 0);
         }
+    }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(products);
-        }
 
-        @Override
-        public String toString() {
-            return "State{" +
-                    "products=" + products +
-                    '}';
+    private Map<String, List<String>> createPrecedences() {
+        var precedences = new HashMap<String, List<String>>();
+        reactions.forEach(reaction -> {
+            precedences.putIfAbsent(reaction.getOutputName(), new ArrayList<>());
+            reaction.getInputs().keySet().forEach(name -> {
+                        precedences.putIfAbsent(name, new ArrayList<>());
+                        precedences.get(name).add(reaction.getOutputName());
+                    });
+        });
+        return precedences;
+    }
+
+    private List<String> topologicalSort() {
+        var result = new ArrayList<String>();
+        var precedences = createPrecedences();
+        while (!precedences.isEmpty()) {
+            var key = precedences.keySet().stream()
+                    .filter(k -> precedences.get(k).isEmpty())
+                    .findAny().orElseThrow();
+            result.add(key);
+            precedences.remove(key);
+            precedences.values().forEach(v -> v.remove(key));
         }
+        return result;
     }
 
     public int inputQuantity(int outputQuantity, String outputName, String inputName) {
-        var visited = new HashSet<State>();
-        var candidates = new ArrayList<State>();
-        candidates.add(new State(outputQuantity, outputName));
-        while (!candidates.isEmpty()) {
-            var current = candidates.remove(0);
-            if (current.isFinal(inputName))
-                return current.products.get(inputName);
-            if (visited.contains(current)) continue;
-            var nextStates = current.applyReactions(reactions);
-            candidates.addAll(nextStates);
-            visited.add(current);
+        var order = topologicalSort();
+        var state = new State(outputQuantity, outputName);
+        for (String name : order) {
+            var reaction = reactions.stream()
+                    .filter(r -> r.getOutputName().equals(name))
+                    .findAny();
+            if (reaction.isEmpty()) continue;
+            var newState = state.applyReaction(reaction.get());
+            if (newState.isPresent()) {
+                state = newState.get();
+            }
         }
-        throw new IllegalStateException("Should not happen");
-    }
-
-    @Override
-    public String toString() {
-        return "Reactions{" +
-                "reactions=" + reactions +
-                '}';
+        return state.get(inputName);
     }
 }
