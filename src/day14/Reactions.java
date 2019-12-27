@@ -56,7 +56,6 @@ public class Reactions {
         }
     }
 
-
     private Map<String, List<String>> createPrecedences() {
         var precedences = new HashMap<String, List<String>>();
         reactions.forEach(reaction -> {
@@ -96,6 +95,7 @@ public class Reactions {
                 state = newState.get();
             }
         }
+        System.out.println("state = " + state);
         return state.get(inputName);
     }
 }

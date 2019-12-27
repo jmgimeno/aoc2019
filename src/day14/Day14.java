@@ -18,4 +18,8 @@ public class Day14 {
     public static void main(String[] args) throws IOException {
         part1();
     }
+
+    public static long maximumFuelForOre(long ore) {
+        return 0;
+    }
 }

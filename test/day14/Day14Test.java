@@ -32,7 +32,7 @@ class Day14Test {
     }
 
     @Test
-    void part1Example3() {
+    void allPartsExample3() {
         var reactions = """
                 157 ORE => 5 NZVS
                 165 ORE => 6 DCFZ
@@ -44,10 +44,11 @@ class Day14Test {
                 165 ORE => 2 GPVTF
                 3 DCFZ, 7 NZVS, 5 HKGWZ, 10 PSHF => 8 KHKGT""";
         assertEquals(13312, Day14.minimumRequiredOre(reactions));
+        assertEquals(82892753L, Day14.maximumFuelForOre(1000000000000L));
     }
 
     @Test
-    void part1Example4() {
+    void allPartsExample4() {
         var reactions = """
                 2 VPVL, 7 FWMGM, 2 CXFTF, 11 MNCFX => 1 STKFG
                 17 NVRVD, 3 JNWZP => 8 VPVL
@@ -62,28 +63,11 @@ class Day14Test {
                 1 VJHF, 6 MNCFX => 4 RFSQX
                 176 ORE => 6 VJHF""";
         assertEquals(180697, Day14.minimumRequiredOre(reactions));
+        assertEquals(5586022L, Day14.maximumFuelForOre(1000000000000L));
     }
 
     @Test
-    void part1Example5() {
-        var reactions = """
-                2 VPVL, 7 FWMGM, 2 CXFTF, 11 MNCFX => 1 STKFG
-                17 NVRVD, 3 JNWZP => 8 VPVL
-                53 STKFG, 6 MNCFX, 46 VJHF, 81 HVMC, 68 CXFTF, 25 GNMV => 1 FUEL
-                22 VJHF, 37 MNCFX => 5 FWMGM
-                139 ORE => 4 NVRVD
-                144 ORE => 7 JNWZP
-                5 MNCFX, 7 RFSQX, 2 FWMGM, 2 VPVL, 19 CXFTF => 3 HVMC
-                5 VJHF, 7 MNCFX, 9 VPVL, 37 CXFTF => 6 GNMV
-                145 ORE => 6 MNCFX
-                1 NVRVD => 8 CXFTF
-                1 VJHF, 6 MNCFX => 4 RFSQX
-                176 ORE => 6 VJHF""";
-        assertEquals(180697, Day14.minimumRequiredOre(reactions));
-    }
-
-    @Test
-    void part1Example6() {
+    void allPartsExample5() {
         var reactions = """
                 171 ORE => 8 CNZTR
                 7 ZLQW, 3 BMBT, 9 XCVML, 26 XMNCP, 1 WPTQ, 2 MZWV, 1 RJRHP => 4 PLWSL
@@ -103,6 +87,7 @@ class Day14Test {
                 7 XCVML => 6 RJRHP
                 5 BHXH, 4 VRPVC => 5 LTCX""";
         assertEquals(2210736, Day14.minimumRequiredOre(reactions));
+        assertEquals(460664L, Day14.maximumFuelForOre(1000000000000L));
     }
 
 }
